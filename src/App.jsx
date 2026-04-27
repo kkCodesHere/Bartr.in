@@ -15,7 +15,7 @@ import {
   Check,
   Target,
   Wrench, Monitor, Hammer, Scissors, Car, Camera, Paintbrush, Briefcase, Code, Music, Search,
-  User, Lock, Mail, X, Edit2, Save, FileText, LayoutGrid, Calendar, Flame, Filter, Plus, Activity, Award, Star, Clock
+  User, Lock, Mail, X, Edit2, Save, FileText, LayoutGrid, Calendar, Flame, Filter, Plus, Activity, Award, Star, Clock, AlertCircle
 } from 'lucide-react';
 
 const fadeIn = {
@@ -67,16 +67,15 @@ const TracingBackground = () => {
   return (
     <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
 
-      {/* Gradient Dotted Map Background */}
+      {/* Dotted Map Background */}
       <div style={{ 
         position: 'absolute', width: '120%', height: '120%', left: '-10%', top: '-10%',
-        backgroundImage: 'linear-gradient(135deg, #10b981 0%, #ef4444 100%), url("/world-map.png")',
-        backgroundSize: 'cover, cover',
-        backgroundPosition: 'center, center',
-        backgroundRepeat: 'no-repeat, no-repeat',
-        backgroundBlendMode: 'lighten', // This makes the gradient show on dark dots
-        opacity: 0.18,
-        filter: 'brightness(1.1) contrast(1.1)'
+        backgroundImage: 'url("/world-map.png")',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        opacity: 0.25,
+        filter: 'grayscale(100%) brightness(1.2)'
       }}></div>
 
       {/* Connecting Data Traces */}
@@ -1063,14 +1062,14 @@ const EventsPage = ({ setPage, isLoggedIn, onAuth, onLogout }) => {
                     <div style={{ background: '#ef4444', width: '15px', height: '15px', borderRadius: '50%', boxShadow: '0 0 15px #ef4444' }}></div>
                     <span style={{ fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.1em' }}>LIVE EVENT</span>
                   </div>
-                  <div style={{ fontWeight: '900' }}>MAY 2</div>
+                  <div style={{ fontWeight: '900' }}>MAY 9</div>
                </div>
 
                <div style={{ display: 'flex', flex: 1, flexWrap: 'wrap' }}>
                  <div style={{ flex: '1.5', padding: '4rem', display: 'flex', flexDirection: 'column', justifyContent: 'center', borderRight: '6px solid black', minWidth: '350px' }}>
                     <div style={{ background: 'white', color: 'black', border: '4px solid black', padding: '0.5rem 1.5rem', borderRadius: '12px', fontWeight: '900', textTransform: 'uppercase', width: 'fit-content', marginBottom: '2rem', boxShadow: '6px 6px 0px black', fontSize: '1.25rem' }}>🔥 THE MAIN STAGE</div>
                     
-                    <h3 style={{ fontSize: 'clamp(3rem, 8vw, 6rem)', marginBottom: '1.5rem', color: 'black', fontWeight: '900', lineHeight: 0.85, letterSpacing: '-0.04em' }}>PITCH <br/><span style={{ color: '#ef4444' }}>FIRE.</span></h3>
+                    <h3 style={{ fontSize: 'clamp(3rem, 8vw, 6rem)', marginBottom: '1.5rem', color: 'black', fontWeight: '900', lineHeight: 0.85, letterSpacing: '-0.04em' }}>FOUNDERS <br/><span style={{ color: '#ef4444' }}>ARENA.</span></h3>
                     
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginTop: '2rem' }}>
                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', fontSize: '1.75rem', fontWeight: '800' }}>
@@ -1135,7 +1134,7 @@ const PitchFireRegistration = ({ setPage, user }) => {
     e.preventDefault();
     setLoading('Sending Secure OTP to your email...');
     try {
-      const res = await fetch('http://localhost:3001/send-otp', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/send-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
@@ -1157,7 +1156,7 @@ const PitchFireRegistration = ({ setPage, user }) => {
     e.preventDefault();
     setLoading('Verifying 2FA Code...');
     try {
-      const res = await fetch('http://localhost:3001/verify-otp', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/verify-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, otp })
@@ -1195,7 +1194,7 @@ const PitchFireRegistration = ({ setPage, user }) => {
       if (dbError) throw dbError;
 
       // 2. Send email notification
-      await fetch('http://localhost:3001/send-ticket', {
+      await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/send-ticket`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, ticketId: result, teamName: teamData.teamName })
@@ -1244,7 +1243,7 @@ const PitchFireRegistration = ({ setPage, user }) => {
             transition={{ repeat: Infinity, duration: 30, ease: 'linear' }} 
             style={{ fontSize: '20rem', fontWeight: 900, color: 'white', whiteSpace: 'nowrap', lineHeight: 1 }}
           >
-            PITCH FIRE MAY 2 • PITCH FIRE MAY 2 • PITCH FIRE MAY 2
+            FOUNDERS ARENA MAY 9 • FOUNDERS ARENA MAY 9 • FOUNDERS ARENA MAY 9
           </motion.div>
           <motion.div 
             animate={{ x: [0, -2000] }} 
@@ -1946,7 +1945,7 @@ const AuthModal = ({ isOpen, initialMode, onClose }) => {
         if (error) throw error;
         
         // Send custom welcome email via backend
-        fetch('http://localhost:3001/welcome-email', {
+        fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/welcome-email`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, fullName })

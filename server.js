@@ -105,14 +105,14 @@ app.post('/send-ticket', async (req, res) => {
   const mailOptions = {
     from: `"Bartr App" <${process.env.EMAIL_USER}>`,
     to: email,
-    subject: '🔥 TICKET: May 2nd at Aromas Cafe & Bistro',
+    subject: '🔥 TICKET: May 9th at Aromas Cafe & Bistro',
     html: `
       <div style="font-family: Arial, sans-serif; color: black; padding: 20px; border: 2px solid black;">
-        <h2 style="text-transform: uppercase;">Your Pitch Fire Ticket</h2>
+        <h2 style="text-transform: uppercase;">Your Founders Arena Ticket</h2>
         <p style="font-size: 16px; margin-bottom: 20px;">Hi Founder, your registration is confirmed!</p>
         
         <div style="background: #f8fafc; padding: 15px; border: 1px solid #ccc; margin-bottom: 20px;">
-          <p style="margin: 5px 0;"><strong>📅 DATE:</strong> May 2nd, 2026</p>
+          <p style="margin: 5px 0;"><strong>📅 DATE:</strong> May 9th, 2026</p>
           <p style="margin: 5px 0;"><strong>⏰ TIME:</strong> 9:30 AM to 1:30 PM</p>
           <p style="margin: 5px 0;"><strong>📍 VENUE:</strong> Aromas Cafe & Bistro, Nagpur</p>
           <p style="margin: 10px 0 0;"><a href="https://www.google.com/maps/place/Aromas+Cafe+%26+Bistro/@21.1171149,79.0565725,17z/data=!4m14!1m7!3m6!1s0x3bd4bf005003a015:0xb8ee2420eea3ba55!2sAromas+Cafe+%26+Bistro!8m2!3d21.1171149!4d79.0565725!16s%2Fg%2F11vx4lx8tc!3m5!1s0x3bd4bf005003a015:0xb8ee2420eea3ba55!8m2!3d21.1171149!4d79.0565725!16s%2Fg%2F11vx4lx8tc?entry=ttu&g_ep=EgoyMDI2MDQxOS4wIKXMDSoASAFQAw%3D%3D" style="color: blue; text-decoration: underline;">Open in Google Maps</a></p>
