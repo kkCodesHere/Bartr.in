@@ -15,7 +15,7 @@ import {
   Check,
   Target,
   Wrench, Monitor, Hammer, Scissors, Car, Camera, Paintbrush, Briefcase, Code, Music, Search,
-  User, Lock, Mail, X, Edit2, Save, FileText, LayoutGrid, Calendar, Flame, Filter, Plus, Activity, Award, Star, Clock, AlertCircle
+  User, Lock, Mail, X, Edit2, Save, FileText, LayoutGrid, Calendar, Flame, Filter, Plus, Activity, Award, Star, Clock, AlertCircle, GraduationCap, ChevronLeft, Send
 } from 'lucide-react';
 
 const fadeIn = {
@@ -47,7 +47,7 @@ const TracingBackground = () => {
         scale: Math.random() * 0.6 + 0.4, // size variation
         duration: Math.random() * 4 + 4, // 4s to 8s 
         type: Math.random() > 0.5 ? 'success' : 'primary', // 50% chance to be green or red
-        ip: `${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*100)}.${Math.floor(Math.random()*255)}`
+        ip: `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 100)}.${Math.floor(Math.random() * 255)}`
       };
       setPins(prev => {
         const next = [...prev, newPin];
@@ -59,7 +59,7 @@ const TracingBackground = () => {
 
     const interval = setInterval(generatePin, 1200); // Slower generation for better performance
     // Initial pins
-    for(let i=0; i<5; i++) setTimeout(generatePin, i*200);
+    for (let i = 0; i < 5; i++) setTimeout(generatePin, i * 200);
 
     return () => clearInterval(interval);
   }, []);
@@ -68,7 +68,7 @@ const TracingBackground = () => {
     <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
 
       {/* Dotted Map Background */}
-      <div style={{ 
+      <div style={{
         position: 'absolute', width: '120%', height: '120%', left: '-10%', top: '-10%',
         backgroundImage: 'url("/world-map.png")',
         backgroundSize: 'cover',
@@ -82,16 +82,16 @@ const TracingBackground = () => {
       <svg style={{ position: 'absolute', width: '100%', height: '100%', top: 0, left: 0 }}>
         {pins.map((pin, i) => {
           if (i === 0) return null; // Need previous pin to connect to
-          const prevPin = pins[i - 1]; 
-          
+          const prevPin = pins[i - 1];
+
           const dx = pin.x - prevPin.x;
           const dy = pin.y - prevPin.y;
           const bend = pin.id > 0.5 ? 0.3 : -0.3;
           const cx = prevPin.x + dx / 2 - dy * bend;
           const cy = prevPin.y + dy / 2 + dx * bend;
-          
+
           const pathD = `M ${prevPin.x}% ${prevPin.y - 4}% Q ${cx}% ${cy}% ${pin.x}% ${pin.y}%`;
-          
+
           const strokeColor = pin.type === 'success' ? '#10b981' : '#ef4444'; // Bright Green / Bright Red
 
           return (
@@ -99,12 +99,12 @@ const TracingBackground = () => {
               key={`line-${pin.id}`}
               d={pathD}
               initial={{ opacity: 0 }}
-              animate={{ 
+              animate={{
                 opacity: [0, 0.6, 0.6, 0],
                 strokeDashoffset: [0, -300] // Fast data zip
               }}
               exit={{ opacity: 0 }}
-              transition={{ 
+              transition={{
                 opacity: { duration: pin.duration, ease: "easeInOut" },
                 strokeDashoffset: { duration: 1.5, repeat: Infinity, ease: "linear" }
               }}
@@ -137,16 +137,16 @@ const TracingBackground = () => {
               style={{ position: 'absolute', left: `${pin.x}%`, top: `${pin.y}%`, color: pinColor, transform: 'translate(-50%, -50%)' }}
             >
               <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                 
-                 {/* Location Icon */}
-                 <motion.div 
-                   style={{ 
-                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                     filter: `drop-shadow(0 0 5px ${pinColor})`
-                   }}
-                 >
-                   <MapPin size={32} strokeWidth={2} />
-                 </motion.div>
+
+                {/* Location Icon */}
+                <motion.div
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    filter: `drop-shadow(0 0 5px ${pinColor})`
+                  }}
+                >
+                  <MapPin size={32} strokeWidth={2} />
+                </motion.div>
 
               </div>
             </motion.div>
@@ -160,7 +160,7 @@ const TracingBackground = () => {
 // Animated Abstract Background for Sections (Floating Tools)
 const FloatingIconsBackground = React.memo(() => {
   const iconSet = [Wrench, Code, Scissors, MessageSquare, Camera, Paintbrush, Briefcase, Zap, Music, Hammer];
-  
+
   // Memoize random properties so they don't regenerate continuously on mouse move
   const floatingIconsProps = useMemo(() => {
     return [...Array(15)].map((_, i) => {
@@ -185,15 +185,15 @@ const FloatingIconsBackground = React.memo(() => {
       <div style={{ position: 'absolute', width: '100%', height: '100%', background: 'linear-gradient(to bottom, rgba(248, 250, 252, 0) 0%, rgba(248, 250, 252, 0.6) 100%)', zIndex: 1 }} />
       {floatingIconsProps.map((props, i) => {
         const { Icon, size, left, top, durationY, durationX, delay, driftY, swayX, rotateMax } = props;
-        
+
         return (
           <motion.div
             key={`bg-icon-${i}`}
             initial={{ opacity: 0.12 }} // Much higher opacity
-            animate={{ 
-              y: [0, driftY, 0], 
+            animate={{
+              y: [0, driftY, 0],
               x: [0, swayX, -swayX, 0],
-              rotate: [0, rotateMax, -rotateMax, 0] 
+              rotate: [0, rotateMax, -rotateMax, 0]
             }}
             transition={{
               y: { duration: durationY, repeat: Infinity, ease: "easeInOut", delay },
@@ -247,8 +247,8 @@ const Navbar = ({ scrolled, setPage, isDark, isLoggedIn, onAuth, onLogout, curre
     <div className="container mx-auto px-6 md:px-8 py-3 md:py-5 flex flex-col md:flex-row justify-between items-center gap-4 md:gap-0">
       {/* Top Row: Brand (Left) + Auth (Right) on mobile */}
       <div className="flex justify-between items-center w-full md:w-auto">
-        <motion.div 
-          whileHover={{ scale: 1.02, rotate: -1 }} 
+        <motion.div
+          whileHover={{ scale: 1.02, rotate: -1 }}
           className="brand cursor-pointer flex items-center bg-brand-red px-4 md:px-5 py-1.5 md:py-2 rounded-xl shadow-neo"
           onClick={() => setPage('home')}
         >
@@ -258,7 +258,10 @@ const Navbar = ({ scrolled, setPage, isDark, isLoggedIn, onAuth, onLogout, curre
         {/* Mobile Auth (Now on the Right) */}
         <div className="flex md:hidden gap-2">
           {isLoggedIn ? (
-            <button onClick={onLogout} className="bg-white border-2 border-slate-900 px-4 py-2 rounded-xl font-black text-xs shadow-sm uppercase">Logout</button>
+            <>
+              <button onClick={() => window.dispatchEvent(new Event('openInboxModal'))} className="bg-white border-2 border-slate-900 px-3 py-2 rounded-xl text-slate-900 flex items-center justify-center"><MessageSquare size={16} /></button>
+              <button onClick={onLogout} className="bg-white border-2 border-slate-900 px-4 py-2 rounded-xl font-black text-xs shadow-sm uppercase">Logout</button>
+            </>
           ) : (
             <button onClick={() => onAuth('login')} className="bg-white border-2 border-slate-900 px-4 py-2 rounded-xl font-black text-xs shadow-sm uppercase">Login</button>
           )}
@@ -274,6 +277,7 @@ const Navbar = ({ scrolled, setPage, isDark, isLoggedIn, onAuth, onLogout, curre
           { id: 'events', label: 'Events', icon: <Calendar size={18} /> },
           { id: 'careers', label: 'Careers', icon: <Briefcase size={18} /> },
           { id: 'tri-score', label: 'TRI Score', icon: <Award size={18} /> },
+          { id: 'student', label: 'Student', icon: <GraduationCap size={18} /> },
           ...(isLoggedIn ? [{ id: 'profile', label: 'Profile', icon: <User size={18} /> }] : [])
         ].map((item) => (
           <motion.a
@@ -287,25 +291,34 @@ const Navbar = ({ scrolled, setPage, isDark, isLoggedIn, onAuth, onLogout, curre
           </motion.a>
         ))}
       </div>
-      
+
       {/* Desktop Auth Actions */}
       <div className="hidden md:flex gap-3 items-center">
         {isLoggedIn ? (
-          <motion.button 
-            whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={onLogout}
-            className="bg-white border-2 border-black px-5 py-2 rounded-xl font-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] uppercase text-sm"
-          >
-            LOGOUT
-          </motion.button>
+          <>
+            <motion.button
+              whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+              onClick={() => window.dispatchEvent(new Event('openInboxModal'))}
+              className="bg-white border-2 border-black w-10 h-10 rounded-xl flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-black"
+            >
+              <MessageSquare size={18} />
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={onLogout}
+              className="bg-white border-2 border-black px-5 py-2 rounded-xl font-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] uppercase text-sm"
+            >
+              LOGOUT
+            </motion.button>
+          </>
         ) : (
           <>
-            <motion.button 
+            <motion.button
               whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => onAuth('login')}
               className="bg-white text-black border-2 border-black px-5 py-2 rounded-xl font-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] uppercase text-sm"
             >
               LOGIN
             </motion.button>
-            <motion.button 
+            <motion.button
               whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => onAuth('signup')}
               className="bg-brand-red text-white border-2 border-black px-5 py-2 rounded-xl font-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] uppercase text-sm"
             >
@@ -320,16 +333,151 @@ const Navbar = ({ scrolled, setPage, isDark, isLoggedIn, onAuth, onLogout, curre
 
 );
 
+// --- POST GIG MODAL ---
+const PostGigModal = ({ isOpen, onClose, user, onPostSuccess, categories }) => {
+  const [title, setTitle] = useState('');
+  const [category, setCategory] = useState('Manual');
+  const [price, setPrice] = useState('');
+  const [description, setDescription] = useState('');
+  const [location, setLocation] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  if (!isOpen) return null;
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!user) {
+      alert("Please login to post a gig!");
+      return;
+    }
+    setLoading(true);
+    const { error } = await supabase.from('gigs').insert({
+      client_id: user.id,
+      title,
+      category,
+      price,
+      description,
+      location,
+      status: 'Active'
+    });
+    setLoading(false);
+    if (!error) {
+      onPostSuccess();
+      onClose();
+      setTitle(''); setPrice(''); setDescription(''); setLocation('');
+    } else {
+      alert("Error posting gig: " + error.message);
+    }
+  };
+
+  return (
+    <AnimatePresence>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[10000] flex items-center justify-center p-4 backdrop-blur-xl bg-black/60" onClick={onClose}>
+        <motion.div initial={{ scale: 0.9, y: 30 }} animate={{ scale: 1, y: 0 }} className="bg-white border-[8px] border-black rounded-[40px] w-full max-w-[600px] p-8 shadow-[16px_16px_0px_rgba(0,0,0,1)] relative" onClick={e => e.stopPropagation()}>
+          <button onClick={onClose} className="absolute top-6 right-6 bg-slate-100 text-black p-2 rounded-xl hover:bg-black hover:text-white transition-colors">
+            <X size={20} strokeWidth={3} />
+          </button>
+          <h2 className="text-4xl font-black uppercase italic mb-6">Post a Gig</h2>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="text-xs font-black uppercase tracking-widest text-slate-400">What do you need?</label>
+              <input type="text" placeholder="e.g. Fix my sink, Build a React App" className="w-full bg-slate-50 border-4 border-black p-4 rounded-2xl font-bold focus:bg-white outline-none" value={title} onChange={e=>setTitle(e.target.value)} required />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-black uppercase tracking-widest text-slate-400">Category</label>
+                <select className="w-full bg-slate-50 border-4 border-black p-4 rounded-2xl font-bold outline-none" value={category} onChange={e=>setCategory(e.target.value)}>
+                  {categories.filter(c => c.name !== 'All').map(c => <option key={c.name} value={c.name}>{c.name}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-black uppercase tracking-widest text-slate-400">Budget / Offer</label>
+                <input type="text" placeholder="e.g. ₹500, Negotiable" className="w-full bg-slate-50 border-4 border-black p-4 rounded-2xl font-bold focus:bg-white outline-none" value={price} onChange={e=>setPrice(e.target.value)} required />
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-black uppercase tracking-widest text-slate-400">Location (or Remote)</label>
+              <input type="text" placeholder="e.g. Dharampeth, Remote" className="w-full bg-slate-50 border-4 border-black p-4 rounded-2xl font-bold focus:bg-white outline-none" value={location} onChange={e=>setLocation(e.target.value)} required />
+            </div>
+            <div>
+              <label className="text-xs font-black uppercase tracking-widest text-slate-400">Description</label>
+              <textarea placeholder="Give more details..." className="w-full bg-slate-50 border-4 border-black p-4 rounded-2xl font-bold focus:bg-white outline-none" rows="3" value={description} onChange={e=>setDescription(e.target.value)} required></textarea>
+            </div>
+            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} disabled={loading} type="submit" className={`w-full py-4 rounded-2xl font-black text-2xl border-4 border-black shadow-[8px_8px_0px_black] uppercase italic ${loading ? 'opacity-50 cursor-not-allowed bg-slate-500 text-white' : 'bg-brand-red text-white'}`}>
+              {loading ? 'Posting...' : 'Post It!'}
+            </motion.button>
+          </form>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+};
+
 // --- UNIQUE GIGS PAGE (Ultimate Redesign) ---
-const GigsPage = ({ setPage, isLoggedIn, onAuth, onLogout, currentPage }) => {
+const GigsPage = ({ setPage, isLoggedIn, onAuth, onLogout, currentPage, user }) => {
   const [scrolled, setScrolled] = useState(false);
   const [activeCategory, setActiveCategory] = useState('All');
-  
+  const [gigs, setGigs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showPostModal, setShowPostModal] = useState(false);
+  const [myApplications, setMyApplications] = useState([]);
+  const [applyingGigId, setApplyingGigId] = useState(null);
+
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    fetchGigs();
+    fetchApplications();
+  }, [user]);
+
+  const fetchGigs = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('gigs')
+      .select('*, user_profiles(full_name, role)')
+      .order('created_at', { ascending: false });
+    
+    if (data) setGigs(data);
+    setLoading(false);
+  };
+
+  const fetchApplications = async () => {
+    if (!user) {
+      setMyApplications([]);
+      return;
+    }
+    const { data, error } = await supabase
+      .from('gig_applications')
+      .select('gig_id')
+      .eq('applicant_id', user.id);
+    if (data) {
+      setMyApplications(data.map(app => app.gig_id));
+    }
+  };
+
+  const handleApply = async (gig) => {
+    if (!isLoggedIn || !user) {
+      onAuth('login');
+      return;
+    }
+    setApplyingGigId(gig.id);
+    const { error } = await supabase
+      .from('gig_applications')
+      .insert([
+        { gig_id: gig.id, applicant_id: user.id }
+      ]);
+    
+    if (!error) {
+      setMyApplications(prev => [...prev, gig.id]);
+    } else {
+      alert("Failed to apply: " + error.message);
+    }
+    setApplyingGigId(null);
+  };
 
   const categories = [
     { name: 'All', icon: <LayoutGrid size={18} />, color: '#000' },
@@ -339,38 +487,42 @@ const GigsPage = ({ setPage, isLoggedIn, onAuth, onLogout, currentPage }) => {
     { name: 'Delivery', icon: <Zap size={18} />, color: '#22c55e' }
   ];
 
-  const gigs = [
-    { id: 1, title: 'Fix My Kitchen Sink', category: 'Manual', price: '₹400', time: '2h ago', status: 'Urgent', desc: 'Leaking pipe under the main sink. Need help ASAP.', loc: 'Dharampeth' },
-    { id: 2, title: 'UI Design for App', category: 'Creative', price: '₹2500', time: '5h ago', status: 'Active', desc: 'Need a simple 3-page mockup for a local delivery app.', loc: 'Sadat Bazar' },
-    { id: 3, title: 'Shift 10 Boxes', category: 'Manual', price: '₹200', time: '1h ago', status: 'Instant', desc: 'Just need some muscle to move boxes to the 2nd floor.', loc: 'Dhantoli' },
-    { id: 4, title: 'Debug React Code', category: 'Tech', price: '₹1200', time: '10m ago', status: 'Urgent', desc: 'Infinite loop in my useEffect. Help me find it!', loc: 'Remote' },
-    { id: 5, title: 'Grocery Run', category: 'Delivery', price: '₹150', time: '3h ago', status: 'Active', desc: 'Pick up 5 items from Big Bazaar and drop at Sitabuldi.', loc: 'Sitabuldi' },
-    { id: 6, title: 'Logo Animation', category: 'Creative', price: '₹1800', time: '6h ago', status: 'New', desc: 'Lottie animation for a startup splash screen.', loc: 'Itwari' }
-  ];
-
   const filteredGigs = activeCategory === 'All' ? gigs : gigs.filter(g => g.category === activeCategory);
+
+  const formatTime = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diff = Math.floor((now - date) / 1000 / 60); // minutes
+    if (diff < 60) return `${diff}m ago`;
+    const hours = Math.floor(diff / 60);
+    if (hours < 24) return `${hours}h ago`;
+    return `${Math.floor(hours / 24)}d ago`;
+  };
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ background: '#f8fafc', minHeight: '100vh', color: '#000', paddingBottom: '60px' }}>
       <Navbar scrolled={scrolled} setPage={setPage} isDark={false} isLoggedIn={isLoggedIn} onAuth={onAuth} onLogout={onLogout} currentPage="gigs" />
-      
+
+      {/* MODAL */}
+      <PostGigModal isOpen={showPostModal} onClose={() => setShowPostModal(false)} user={user} onPostSuccess={fetchGigs} categories={categories} />
+
       <div className="container" style={{ paddingTop: '130px' }}>
-        
+
         {/* Floating Category Pill Bar + Post Button */}
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'center', 
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
           marginBottom: '4rem',
           position: 'sticky',
           top: '110px',
           zIndex: 100
         }}>
-          <div style={{ 
-            background: 'rgba(255, 255, 255, 0.8)', 
-            backdropFilter: 'blur(20px)', 
-            padding: '0.5rem', 
-            borderRadius: '100px', 
-            display: 'flex', 
+          <div style={{
+            background: 'rgba(255, 255, 255, 0.8)',
+            backdropFilter: 'blur(20px)',
+            padding: '0.5rem',
+            borderRadius: '100px',
+            display: 'flex',
             gap: '0.5rem',
             alignItems: 'center',
             border: '1px solid rgba(0,0,0,0.05)',
@@ -386,9 +538,9 @@ const GigsPage = ({ setPage, isLoggedIn, onAuth, onLogout, currentPage }) => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setActiveCategory(cat.name)}
-                  style={{ 
-                    padding: '0.7rem 1.2rem', 
-                    borderRadius: '100px', 
+                  style={{
+                    padding: '0.7rem 1.2rem',
+                    borderRadius: '100px',
                     background: activeCategory === cat.name ? '#000' : 'transparent',
                     color: activeCategory === cat.name ? 'white' : '#666',
                     border: 'none',
@@ -409,14 +561,18 @@ const GigsPage = ({ setPage, isLoggedIn, onAuth, onLogout, currentPage }) => {
             <motion.button
               whileHover={{ scale: 1.05, background: '#dc2626' }}
               whileTap={{ scale: 0.95 }}
-              style={{ 
-                background: '#ef4444', 
-                color: 'white', 
-                border: 'none', 
-                padding: '0.7rem 1.5rem', 
-                borderRadius: '100px', 
-                fontWeight: '900', 
-                fontSize: '0.9rem', 
+              onClick={() => {
+                if (isLoggedIn) setShowPostModal(true);
+                else onAuth('login');
+              }}
+              style={{
+                background: '#ef4444',
+                color: 'white',
+                border: 'none',
+                padding: '0.7rem 1.5rem',
+                borderRadius: '100px',
+                fontWeight: '900',
+                fontSize: '0.9rem',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
@@ -431,99 +587,152 @@ const GigsPage = ({ setPage, isLoggedIn, onAuth, onLogout, currentPage }) => {
 
         {/* Dynamic Bento Grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '2rem' }}>
-          <AnimatePresence mode="popLayout">
-            {filteredGigs.map((gig, i) => {
-              const catInfo = categories.find(c => c.name === gig.category);
-              return (
-                <motion.div
-                  key={gig.id}
-                  layout
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.4, delay: i * 0.05 }}
-                  whileHover={{ y: -10 }}
-                  style={{ 
-                    background: 'white', 
-                    border: '1px solid #eee', 
-                    borderRadius: '32px', 
-                    padding: '2rem',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    boxShadow: `0 10px 40px rgba(0,0,0,0.02), inset 0 0 0 1px rgba(255,255,255,0.5)`,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'space-between',
-                    minHeight: '280px'
-                  }}
-                >
-                  {/* Category Glow */}
-                  <div style={{ 
-                    position: 'absolute', 
-                    top: '-50px', 
-                    right: '-50px', 
-                    width: '150px', 
-                    height: '150px', 
-                    background: catInfo?.color, 
-                    filter: 'blur(80px)', 
-                    opacity: 0.1,
-                    zIndex: 0
-                  }} />
+          {loading ? (
+             <div className="col-span-full text-center py-20 font-black text-2xl text-slate-400 animate-pulse">Fetching the market...</div>
+          ) : filteredGigs.length === 0 ? (
+             <div className="col-span-full text-center py-20 font-black text-2xl text-slate-400">No gigs found in this category. Be the first to post!</div>
+          ) : (
+            <AnimatePresence mode="popLayout">
+              {filteredGigs.map((gig, i) => {
+                const catInfo = categories.find(c => c.name === gig.category) || categories[0];
+                const posterName = gig.user_profiles?.full_name || 'Anonymous';
+                const posterRole = gig.user_profiles?.role || 'User';
 
-                  <div style={{ position: 'relative', zIndex: 1 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                      <span style={{ 
-                        fontSize: '0.7rem', 
-                        fontWeight: '900', 
-                        background: `${catInfo?.color}15`, 
-                        color: catInfo?.color, 
-                        padding: '0.4rem 0.8rem', 
-                        borderRadius: '8px', 
-                        textTransform: 'uppercase' 
-                      }}>{gig.category}</span>
-                      <div style={{ color: '#ccc', fontWeight: '800', fontSize: '0.8rem' }}>{gig.time}</div>
-                    </div>
-                    
-                    <h4 style={{ fontSize: '1.6rem', fontWeight: '900', margin: '0 0 0.5rem 0', letterSpacing: '-0.5px' }}>{gig.title}</h4>
-                    <p style={{ color: '#777', fontSize: '0.95rem', lineHeight: '1.5', fontWeight: '500' }}>{gig.desc}</p>
-                  </div>
+                return (
+                  <motion.div
+                    key={gig.id}
+                    layout
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ duration: 0.4, delay: i * 0.05 }}
+                    whileHover={{ y: -10 }}
+                    style={{
+                      background: 'white',
+                      border: '1px solid #eee',
+                      borderRadius: '32px',
+                      padding: '2rem',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      boxShadow: `0 10px 40px rgba(0,0,0,0.02), inset 0 0 0 1px rgba(255,255,255,0.5)`,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      minHeight: '280px'
+                    }}
+                  >
+                    {/* Category Glow */}
+                    <div style={{
+                      position: 'absolute',
+                      top: '-50px',
+                      right: '-50px',
+                      width: '150px',
+                      height: '150px',
+                      background: catInfo.color,
+                      filter: 'blur(80px)',
+                      opacity: 0.1,
+                      zIndex: 0
+                    }} />
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', position: 'relative', zIndex: 1 }}>
-                    <div>
-                      <div style={{ fontSize: '0.8rem', color: '#aaa', fontWeight: '800', marginBottom: '0.2rem' }}>OFFER</div>
-                      <div style={{ fontSize: '2rem', fontWeight: '900', letterSpacing: '-1px' }}>{gig.price}</div>
+                    <div style={{ position: 'relative', zIndex: 1 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                        <span style={{
+                          fontSize: '0.7rem',
+                          fontWeight: '900',
+                          background: `${catInfo.color}15`,
+                          color: catInfo.color,
+                          padding: '0.4rem 0.8rem',
+                          borderRadius: '8px',
+                          textTransform: 'uppercase'
+                        }}>{gig.category}</span>
+                        <div style={{ color: '#ccc', fontWeight: '800', fontSize: '0.8rem' }}>{formatTime(gig.created_at)}</div>
+                      </div>
+
+                      <h4 style={{ fontSize: '1.6rem', fontWeight: '900', margin: '0 0 0.5rem 0', letterSpacing: '-0.5px' }}>{gig.title}</h4>
+                      
+                      <div className="flex items-center gap-2 mb-3">
+                         <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-black uppercase text-black">{posterName.charAt(0)}</div>
+                         <div className="text-xs font-bold text-slate-500">{posterName} <span className="opacity-50">• {posterRole}</span></div>
+                      </div>
+
+                      <p style={{ color: '#777', fontSize: '0.95rem', lineHeight: '1.5', fontWeight: '500' }}>{gig.description}</p>
                     </div>
-                    <motion.button 
-                      whileHover={{ scale: 1.05, background: '#000', color: '#fff' }}
-                      style={{ background: 'transparent', border: '2.5px solid #000', padding: '0.7rem 1.5rem', borderRadius: '15px', fontWeight: '900', cursor: 'pointer', transition: 'all 0.2s' }}
-                    >
-                      APPLY
-                    </motion.button>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </AnimatePresence>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', position: 'relative', zIndex: 1, marginTop: '1.5rem' }}>
+                      <div>
+                        <div style={{ fontSize: '0.8rem', color: '#aaa', fontWeight: '800', marginBottom: '0.2rem' }}>OFFER</div>
+                        <div style={{ fontSize: '1.5rem', fontWeight: '900', letterSpacing: '-1px' }}>{gig.price}</div>
+                        <div style={{ fontSize: '0.7rem', color: '#aaa', fontWeight: '700', marginTop: '0.2rem' }}>📍 {gig.location}</div>
+                      </div>
+                      {(() => {
+                        if (!user) {
+                          return (
+                            <motion.button
+                              onClick={() => handleApply(gig)}
+                              whileHover={{ scale: 1.05, background: '#000', color: '#fff' }}
+                              style={{ background: 'transparent', border: '2.5px solid #000', padding: '0.7rem 1.5rem', borderRadius: '15px', fontWeight: '900', cursor: 'pointer', transition: 'all 0.2s' }}
+                            >
+                              APPLY
+                            </motion.button>
+                          );
+                        }
+                        
+                        const isOwner = gig.client_id === user.id;
+                        const hasApplied = myApplications.includes(gig.id);
+                        
+                        if (isOwner) {
+                          return (
+                            <button style={{ background: '#f1f5f9', color: '#94a3b8', border: '2.5px solid #e2e8f0', padding: '0.7rem 1.5rem', borderRadius: '15px', fontWeight: '900', cursor: 'not-allowed' }}>
+                              YOUR GIG
+                            </button>
+                          );
+                        }
+
+                        if (hasApplied) {
+                          return (
+                            <button style={{ background: '#10b981', color: 'white', border: '2.5px solid #10b981', padding: '0.7rem 1.5rem', borderRadius: '15px', fontWeight: '900', cursor: 'default' }}>
+                              APPLIED ✓
+                            </button>
+                          );
+                        }
+
+                        return (
+                          <motion.button
+                            onClick={() => handleApply(gig)}
+                            disabled={applyingGigId === gig.id}
+                            whileHover={{ scale: 1.05, background: '#000', color: '#fff' }}
+                            style={{ background: 'transparent', border: '2.5px solid #000', padding: '0.7rem 1.5rem', borderRadius: '15px', fontWeight: '900', cursor: 'pointer', transition: 'all 0.2s', opacity: applyingGigId === gig.id ? 0.5 : 1 }}
+                          >
+                            {applyingGigId === gig.id ? '...' : 'APPLY'}
+                          </motion.button>
+                        );
+                      })()}
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          )}
         </div>
       </div>
 
       {/* FIXED BOTTOM TICKER (Bloomberg Style) */}
-      <div style={{ 
-        position: 'fixed', 
-        bottom: 0, 
-        left: 0, 
-        right: 0, 
-        background: '#000', 
-        color: 'white', 
-        padding: '0.7rem 0', 
+      <div style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        background: '#000',
+        color: 'white',
+        padding: '0.7rem 0',
         zIndex: 10001,
         overflow: 'hidden',
         borderTop: '1px solid rgba(255,255,255,0.1)'
       }}>
         <div style={{ display: 'flex', width: '200%' }}>
-          <motion.div 
-            animate={{ x: ["0%", "-50%"] }} 
-            transition={{ repeat: Infinity, duration: 40, ease: 'linear' }} 
+          <motion.div
+            animate={{ x: ["0%", "-50%"] }}
+            transition={{ repeat: Infinity, duration: 40, ease: 'linear' }}
             style={{ display: 'flex', alignItems: 'center', gap: '5rem', whiteSpace: 'nowrap' }}
           >
             {[1, 2].map(i => (
@@ -548,19 +757,40 @@ const CountUp = ({ target, duration = 2 }) => {
     let start = 0;
     const end = parseInt(target);
     if (start === end) return;
-    
+
     let totalMiliseconds = duration * 1000;
     let incrementTime = totalMiliseconds / end;
-    
+
     let timer = setInterval(() => {
       start += 1;
       setCount(start);
       if (start === end) clearInterval(timer);
     }, incrementTime);
-    
+
     return () => clearInterval(timer);
   }, [target, duration]);
   return <>{count}</>;
+};
+
+// --- STUDENT PAGE SKELETON ---
+const StudentPage = ({ setPage, isLoggedIn, onAuth, onLogout }) => {
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ background: '#f8fafc', minHeight: '100vh', color: '#000', paddingBottom: '60px' }}>
+      <Navbar scrolled={scrolled} setPage={setPage} isDark={false} isLoggedIn={isLoggedIn} onAuth={onAuth} onLogout={onLogout} currentPage="student" />
+      <div className="container" style={{ paddingTop: '150px', textAlign: 'center' }}>
+        <h1 style={{ fontSize: '3rem', fontWeight: '900', letterSpacing: '-1px' }}>Student Section</h1>
+        <p style={{ marginTop: '1rem', color: '#666', fontSize: '1.2rem', fontWeight: '500' }}>Waiting for the design plan...</p>
+      </div>
+    </motion.div>
+  );
 };
 
 // --- TRI SCORE PAGE (Crystal Light Redesign) ---
@@ -581,32 +811,32 @@ const TRIScorePage = ({ setPage, isLoggedIn, onAuth, onLogout }) => {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ background: '#f8fafc', minHeight: '100vh', color: '#000', overflow: 'hidden', position: 'relative' }}>
-      
+
       {/* ATMOSPHERIC BACKGROUND ANIMATION */}
       <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
         {/* Diagonal Ghost Marquees */}
         <div style={{ position: 'absolute', top: 0, left: '-10%', width: '120%', height: '120%', zIndex: 0 }}>
-           {/* Top-Left to Bottom-Right Marquee */}
-           <div style={{ position: 'absolute', top: '20%', left: 0, width: '150%', transform: 'rotate(-15deg)', opacity: 0.04 }}>
-              <motion.div 
-                animate={{ x: [0, -1000] }} 
-                transition={{ repeat: Infinity, duration: 40, ease: 'linear' }}
-                className="whitespace-nowrap font-black text-[12rem] tracking-tighter"
-              >
-                TRUST • VELOCITY • ELITE • SCORE • REPUTATION • TRUST • VELOCITY • ELITE • SCORE • REPUTATION
-              </motion.div>
-           </div>
-           
-           {/* Bottom-Left to Top-Right Marquee */}
-           <div style={{ position: 'absolute', top: '50%', left: '-25%', width: '150%', transform: 'rotate(15deg)', opacity: 0.03 }}>
-              <motion.div 
-                animate={{ x: [-1000, 0] }} 
-                transition={{ repeat: Infinity, duration: 50, ease: 'linear' }}
-                className="whitespace-nowrap font-black text-[10rem] tracking-tighter"
-              >
-                VERIFIED • NAGPUR • BARTR • PERFORMANCE • ELITE • VERIFIED • NAGPUR • BARTR • PERFORMANCE
-              </motion.div>
-           </div>
+          {/* Top-Left to Bottom-Right Marquee */}
+          <div style={{ position: 'absolute', top: '20%', left: 0, width: '150%', transform: 'rotate(-15deg)', opacity: 0.04 }}>
+            <motion.div
+              animate={{ x: [0, -1000] }}
+              transition={{ repeat: Infinity, duration: 40, ease: 'linear' }}
+              className="whitespace-nowrap font-black text-[12rem] tracking-tighter"
+            >
+              TRUST • VELOCITY • ELITE • SCORE • REPUTATION • TRUST • VELOCITY • ELITE • SCORE • REPUTATION
+            </motion.div>
+          </div>
+
+          {/* Bottom-Left to Top-Right Marquee */}
+          <div style={{ position: 'absolute', top: '50%', left: '-25%', width: '150%', transform: 'rotate(15deg)', opacity: 0.03 }}>
+            <motion.div
+              animate={{ x: [-1000, 0] }}
+              transition={{ repeat: Infinity, duration: 50, ease: 'linear' }}
+              className="whitespace-nowrap font-black text-[10rem] tracking-tighter"
+            >
+              VERIFIED • NAGPUR • BARTR • PERFORMANCE • ELITE • VERIFIED • NAGPUR • BARTR • PERFORMANCE
+            </motion.div>
+          </div>
         </div>
 
         {/* Floating Glow Particles */}
@@ -665,28 +895,28 @@ const TRIScorePage = ({ setPage, isLoggedIn, onAuth, onLogout }) => {
       </div>
 
       <Navbar scrolled={scrolled} setPage={setPage} isDark={false} isLoggedIn={isLoggedIn} onAuth={onAuth} onLogout={onLogout} currentPage="tri-score" />
-      
+
       <div className="container" style={{ paddingTop: '150px', paddingBottom: '10rem', position: 'relative', zIndex: 1 }}>
-        
+
         {/* Header Section */}
         <div style={{ textAlign: 'center', marginBottom: '8rem' }}>
-          <motion.div 
+          <motion.div
             initial={{ scale: 0.9, opacity: 0, y: 20 }}
             whileInView={{ scale: 1, opacity: 1, y: 0 }}
             style={{ display: 'inline-flex', alignItems: 'center', gap: '0.6rem', background: '#fff', color: '#6366f1', padding: '0.6rem 1.4rem', borderRadius: '100px', fontWeight: '900', fontSize: '0.85rem', marginBottom: '2.5rem', border: '1px solid #e2e8f0', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}
           >
             <Award size={16} /> RELIABILITY INDEX v2.4
           </motion.div>
-          
-          <motion.h1 
+
+          <motion.h1
             initial={{ opacity: 0, filter: 'blur(10px)', y: 30 }}
             whileInView={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
             transition={{ duration: 0.8 }}
             style={{ fontSize: 'clamp(3rem, 8vw, 6.5rem)', fontWeight: '900', letterSpacing: '-5px', lineHeight: '0.85', marginBottom: '2rem' }}
           >
-            YOUR TRUST. <br/> <span style={{ background: 'linear-gradient(90deg, #6366f1, #ef4444)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>QUANTIFIED.</span>
+            YOUR TRUST. <br /> <span style={{ background: 'linear-gradient(90deg, #6366f1, #ef4444)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>QUANTIFIED.</span>
           </motion.h1>
-          <motion.p 
+          <motion.p
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
@@ -698,80 +928,80 @@ const TRIScorePage = ({ setPage, isLoggedIn, onAuth, onLogout }) => {
 
         {/* The Liquid Gauge Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-start mb-24 md:mb-40">
-           <motion.div 
-             initial={{ opacity: 0, scale: 0.9 }}
-             whileInView={{ opacity: 1, scale: 1 }}
-             viewport={{ once: true }}
-             className="bg-white/70 backdrop-blur-xl border border-white/40 shadow-crystal rounded-[48px] p-10 md:p-16 text-center relative group"
-           >
-              <div className="relative w-[220px] md:w-[280px] h-[220px] md:h-[280px] mx-auto mb-10 md:mb-12">
-                 {/* Outer Glow Effect */}
-                 <motion.div 
-                   animate={{ scale: [1, 1.05, 1], opacity: [0.1, 0.2, 0.1] }}
-                   transition={{ repeat: Infinity, duration: 4 }}
-                   className="absolute inset-0 bg-indigo-500 rounded-full blur-3xl -z-10"
-                 />
-                 
-                 <svg width="100%" height="100%" viewBox="0 0 100 100" className="drop-shadow-[0_0_15px_rgba(99,102,241,0.3)]">
-                    <circle cx="50" cy="50" r="46" fill="none" stroke="rgba(0,0,0,0.03)" strokeWidth="8" />
-                    <motion.circle 
-                      cx="50" cy="50" r="46" fill="none" stroke="url(#pastelGradient)" strokeWidth="8" strokeDasharray="289"
-                      initial={{ strokeDashoffset: 289 }}
-                      whileInView={{ strokeDashoffset: 289 - (289 * 0.85) }}
-                      transition={{ duration: 3, ease: [0.22, 1, 0.36, 1] }}
-                      strokeLinecap="round"
-                    />
-                    <defs>
-                      <linearGradient id="pastelGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor="#6366f1" />
-                        <stop offset="100%" stopColor="#ef4444" />
-                      </linearGradient>
-                    </defs>
-                 </svg>
-                 <div className="absolute inset-0 flex flex-col justify-center items-center">
-                    <div className="text-6xl md:text-[6rem] font-black tracking-tighter leading-none flex items-baseline">
-                      <CountUp target={850} duration={2} />
-                    </div>
-                    <motion.div 
-                      animate={{ scale: [1, 1.1, 1] }}
-                      transition={{ repeat: Infinity, duration: 2 }}
-                      className="text-xs md:text-sm font-black text-indigo-600 tracking-[0.3em] mt-3 uppercase italic"
-                    >
-                      MASTER
-                    </motion.div>
-                 </div>
-              </div>
-              <motion.div 
-                whileHover={{ scale: 1.05 }}
-                className="inline-flex items-center gap-2 bg-black text-white px-6 py-3 rounded-full font-black text-sm border-2 border-black/10 shadow-neo"
-              >
-                 <Activity size={16} className="text-emerald-400 animate-pulse" /> TOP 1.2% NATIONWIDE
-              </motion.div>
-           </motion.div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            className="bg-white/70 backdrop-blur-xl border border-white/40 shadow-crystal rounded-[48px] p-10 md:p-16 text-center relative group"
+          >
+            <div className="relative w-[220px] md:w-[280px] h-[220px] md:h-[280px] mx-auto mb-10 md:mb-12">
+              {/* Outer Glow Effect */}
+              <motion.div
+                animate={{ scale: [1, 1.05, 1], opacity: [0.1, 0.2, 0.1] }}
+                transition={{ repeat: Infinity, duration: 4 }}
+                className="absolute inset-0 bg-indigo-500 rounded-full blur-3xl -z-10"
+              />
 
-           <div className="flex flex-col gap-4">
-              {kpis.map((kpi, i) => (
+              <svg width="100%" height="100%" viewBox="0 0 100 100" className="drop-shadow-[0_0_15px_rgba(99,102,241,0.3)]">
+                <circle cx="50" cy="50" r="46" fill="none" stroke="rgba(0,0,0,0.03)" strokeWidth="8" />
+                <motion.circle
+                  cx="50" cy="50" r="46" fill="none" stroke="url(#pastelGradient)" strokeWidth="8" strokeDasharray="289"
+                  initial={{ strokeDashoffset: 289 }}
+                  whileInView={{ strokeDashoffset: 289 - (289 * 0.85) }}
+                  transition={{ duration: 3, ease: [0.22, 1, 0.36, 1] }}
+                  strokeLinecap="round"
+                />
+                <defs>
+                  <linearGradient id="pastelGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#6366f1" />
+                    <stop offset="100%" stopColor="#ef4444" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div className="absolute inset-0 flex flex-col justify-center items-center">
+                <div className="text-6xl md:text-[6rem] font-black tracking-tighter leading-none flex items-baseline">
+                  <CountUp target={850} duration={2} />
+                </div>
                 <motion.div
-                  key={kpi.title}
-                  initial={{ x: 30, opacity: 0 }}
-                  whileInView={{ x: 0, opacity: 1 }}
-                  transition={{ delay: i * 0.1 }}
-                  whileHover={{ x: 10 }}
-                  className="bg-white/70 backdrop-blur-xl border border-white/40 shadow-crystal hover:shadow-premium hover:-translate-y-1 transition-all rounded-3xl p-6 md:p-8 flex items-center gap-6 cursor-pointer group"
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ repeat: Infinity, duration: 2 }}
+                  className="text-xs md:text-sm font-black text-indigo-600 tracking-[0.3em] mt-3 uppercase italic"
                 >
-                  <div 
-                    className="p-4 rounded-2xl shadow-sm transition-all group-hover:scale-110"
-                    style={{ color: kpi.color, background: 'white' }}
-                  >
-                    {kpi.icon}
-                  </div>
-                  <div>
-                    <h4 className="text-lg md:text-xl font-black text-slate-800 leading-none mb-1">{kpi.title}</h4>
-                    <p className="text-sm md:text-base text-slate-500 font-bold leading-tight">{kpi.desc}</p>
-                  </div>
+                  MASTER
                 </motion.div>
-              ))}
-           </div>
+              </div>
+            </div>
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              className="inline-flex items-center gap-2 bg-black text-white px-6 py-3 rounded-full font-black text-sm border-2 border-black/10 shadow-neo"
+            >
+              <Activity size={16} className="text-emerald-400 animate-pulse" /> TOP 1.2% NATIONWIDE
+            </motion.div>
+          </motion.div>
+
+          <div className="flex flex-col gap-4">
+            {kpis.map((kpi, i) => (
+              <motion.div
+                key={kpi.title}
+                initial={{ x: 30, opacity: 0 }}
+                whileInView={{ x: 0, opacity: 1 }}
+                transition={{ delay: i * 0.1 }}
+                whileHover={{ x: 10 }}
+                className="bg-white/70 backdrop-blur-xl border border-white/40 shadow-crystal hover:shadow-premium hover:-translate-y-1 transition-all rounded-3xl p-6 md:p-8 flex items-center gap-6 cursor-pointer group"
+              >
+                <div
+                  className="p-4 rounded-2xl shadow-sm transition-all group-hover:scale-110"
+                  style={{ color: kpi.color, background: 'white' }}
+                >
+                  {kpi.icon}
+                </div>
+                <div>
+                  <h4 className="text-lg md:text-xl font-black text-slate-800 leading-none mb-1">{kpi.title}</h4>
+                  <p className="text-sm md:text-base text-slate-500 font-bold leading-tight">{kpi.desc}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
 
         {/* The Algorithm Blueprint v3 (High Contrast Split) */}
@@ -781,62 +1011,62 @@ const TRIScorePage = ({ setPage, isLoggedIn, onAuth, onLogout }) => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-stretch">
-          
+
           {/* LEFT: The Dark Engine */}
-          <motion.div 
+          <motion.div
             whileHover={{ y: -5, scale: 1.01 }}
             className="bg-slate-950 rounded-[32px] shadow-2xl overflow-hidden border border-slate-800"
           >
             <div className="bg-slate-900 px-6 py-4 flex justify-between items-center border-b border-slate-800">
-               <div className="flex gap-2">
-                  <div className="w-3.5 h-3.5 rounded-full bg-[#ff5f56]" />
-                  <div className="w-3.5 h-3.5 rounded-full bg-[#ffbd2e]" />
-                  <div className="w-3.5 h-3.5 rounded-full bg-[#27c93f]" />
-               </div>
-               <div className="text-xs text-slate-500 font-mono font-bold tracking-widest uppercase">rep_engine_v3.py</div>
+              <div className="flex gap-2">
+                <div className="w-3.5 h-3.5 rounded-full bg-[#ff5f56]" />
+                <div className="w-3.5 h-3.5 rounded-full bg-[#ffbd2e]" />
+                <div className="w-3.5 h-3.5 rounded-full bg-[#27c93f]" />
+              </div>
+              <div className="text-xs text-slate-500 font-mono font-bold tracking-widest uppercase">rep_engine_v3.py</div>
             </div>
             <div className="p-8 md:p-12 font-mono text-base md:text-lg leading-relaxed text-slate-100">
-               <div className="text-slate-600 mb-4 tracking-tighter"># CORE REPUTATION ALGORITHM</div>
-               <div><span className="text-rose-500">def</span> <span className="text-indigo-400">calculate_tri</span>(data):</div>
-               <div className="pl-6 border-l border-slate-800 ml-1 mt-2 space-y-1">
-                 <div>score = (</div>
-                 <div className="pl-6">data.jobs <span className="text-rose-500">*</span> <span className="text-amber-500">0.45</span> +</div>
-                 <div className="pl-6">data.rating <span className="text-rose-500">*</span> <span className="text-amber-500">0.35</span> +</div>
-                 <div className="pl-6">data.response <span className="text-rose-500">*</span> <span className="text-amber-500">0.20</span></div>
-                 <div>)</div>
-               </div>
-               <div className="mt-4"><span className="text-rose-500">return</span> round(score, <span className="text-amber-500">2</span>)</div>
-               
-               <div className="mt-12 pt-6 border-t border-slate-900">
-                  <div className="text-emerald-400 flex items-center gap-3 text-sm font-bold tracking-wider">
-                     <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.6)] animate-pulse" />
-                     REPUTATION SYSTEMS ONLINE // VERIFIED
-                  </div>
-               </div>
+              <div className="text-slate-600 mb-4 tracking-tighter"># CORE REPUTATION ALGORITHM</div>
+              <div><span className="text-rose-500">def</span> <span className="text-indigo-400">calculate_tri</span>(data):</div>
+              <div className="pl-6 border-l border-slate-800 ml-1 mt-2 space-y-1">
+                <div>score = (</div>
+                <div className="pl-6">data.jobs <span className="text-rose-500">*</span> <span className="text-amber-500">0.45</span> +</div>
+                <div className="pl-6">data.rating <span className="text-rose-500">*</span> <span className="text-amber-500">0.35</span> +</div>
+                <div className="pl-6">data.response <span className="text-rose-500">*</span> <span className="text-amber-500">0.20</span></div>
+                <div>)</div>
+              </div>
+              <div className="mt-4"><span className="text-rose-500">return</span> round(score, <span className="text-amber-500">2</span>)</div>
+
+              <div className="mt-12 pt-6 border-t border-slate-900">
+                <div className="text-emerald-400 flex items-center gap-3 text-sm font-bold tracking-wider">
+                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.6)] animate-pulse" />
+                  REPUTATION SYSTEMS ONLINE // VERIFIED
+                </div>
+              </div>
             </div>
           </motion.div>
 
           {/* RIGHT: The Explanation */}
           <div className="flex flex-col gap-4">
-             {[
-               { icon: <Activity className="text-indigo-500" />, title: '45% / Output Velocity', text: 'We prioritize completed jobs above all. It proves you can start and finish a task reliably.' },
-               { icon: <Star className="text-amber-500" />, title: '35% / Quality Index', text: 'Sentiment analysis of reviews and star ratings ensures that speed never sacrifices excellence.' },
-               { icon: <Clock className="text-emerald-500" />, title: '20% / Pulse Speed', text: 'Your response time to inquiries. On Bartr, speed is trust. Fast engagement leads to higher retention.' }
-             ].map((item, i) => (
-               <motion.div
-                 key={item.title}
-                 initial={{ opacity: 0, x: 20 }}
-                 whileInView={{ opacity: 1, x: 0 }}
-                 transition={{ delay: i * 0.1 }}
-                 className="bg-white/70 backdrop-blur-xl p-8 rounded-3xl border border-white/50 shadow-crystal hover:shadow-premium transition-all"
-               >
-                 <div className="flex items-center gap-4 mb-3">
-                    <div className="bg-white p-3 rounded-xl shadow-sm">{item.icon}</div>
-                    <h4 className="font-black text-lg text-slate-800 tracking-tight">{item.title}</h4>
-                 </div>
-                 <p className="text-slate-500 leading-relaxed font-bold text-sm md:text-base">{item.text}</p>
-               </motion.div>
-             ))}
+            {[
+              { icon: <Activity className="text-indigo-500" />, title: '45% / Output Velocity', text: 'We prioritize completed jobs above all. It proves you can start and finish a task reliably.' },
+              { icon: <Star className="text-amber-500" />, title: '35% / Quality Index', text: 'Sentiment analysis of reviews and star ratings ensures that speed never sacrifices excellence.' },
+              { icon: <Clock className="text-emerald-500" />, title: '20% / Pulse Speed', text: 'Your response time to inquiries. On Bartr, speed is trust. Fast engagement leads to higher retention.' }
+            ].map((item, i) => (
+              <motion.div
+                key={item.title}
+                initial={{ opacity: 0, x: 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.1 }}
+                className="bg-white/70 backdrop-blur-xl p-8 rounded-3xl border border-white/50 shadow-crystal hover:shadow-premium transition-all"
+              >
+                <div className="flex items-center gap-4 mb-3">
+                  <div className="bg-white p-3 rounded-xl shadow-sm">{item.icon}</div>
+                  <h4 className="font-black text-lg text-slate-800 tracking-tight">{item.title}</h4>
+                </div>
+                <p className="text-slate-500 leading-relaxed font-bold text-sm md:text-base">{item.text}</p>
+              </motion.div>
+            ))}
           </div>
         </div>
 
@@ -856,7 +1086,7 @@ const CareersPage = ({ setPage, isLoggedIn, onAuth, onLogout }) => {
   }, []);
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20, transition: { duration: 0.2 } }}
@@ -864,19 +1094,19 @@ const CareersPage = ({ setPage, isLoggedIn, onAuth, onLogout }) => {
       className="min-h-screen" style={{ background: '#f8fafc', position: 'relative', overflow: 'hidden' }}
     >
       <Navbar scrolled={scrolled} setPage={setPage} isDark={false} isLoggedIn={isLoggedIn} onAuth={onAuth} onLogout={onLogout} currentPage="careers" />
-      
+
       {/* GenZ Marquee Background & Neo-brutalist Orbs */}
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '40px 40px', opacity: 0.05, pointerEvents: 'none' }} />
-      
+
       <div style={{ position: 'absolute', top: '15%', left: '-20%', width: '150%', opacity: 0.05, pointerEvents: 'none', transform: 'rotate(-5deg)', zIndex: 0 }}>
-         <motion.div animate={{ x: [0, -1000] }} transition={{ repeat: Infinity, duration: 25, ease: 'linear' }} style={{ whiteSpace: 'nowrap', fontSize: '15rem', fontWeight: 900, lineHeight: 1 }}>
-            WE OUT HERE HIRING • NO CAP • WE OUT HERE HIRING • NO CAP • WE OUT HERE HIRING • NO CAP
-         </motion.div>
+        <motion.div animate={{ x: [0, -1000] }} transition={{ repeat: Infinity, duration: 25, ease: 'linear' }} style={{ whiteSpace: 'nowrap', fontSize: '15rem', fontWeight: 900, lineHeight: 1 }}>
+          WE OUT HERE HIRING • NO CAP • WE OUT HERE HIRING • NO CAP • WE OUT HERE HIRING • NO CAP
+        </motion.div>
       </div>
       <div style={{ position: 'absolute', top: '65%', left: '-20%', width: '150%', opacity: 0.05, pointerEvents: 'none', transform: 'rotate(5deg)', zIndex: 0 }}>
-         <motion.div animate={{ x: [-1000, 0] }} transition={{ repeat: Infinity, duration: 20, ease: 'linear' }} style={{ whiteSpace: 'nowrap', fontSize: '15rem', fontWeight: 900, lineHeight: 1 }}>
-            DOUBT WE'LL RESPOND • DOUBT WE'LL RESPOND • DOUBT WE'LL RESPOND • DOUBT WE'LL RESPOND
-         </motion.div>
+        <motion.div animate={{ x: [-1000, 0] }} transition={{ repeat: Infinity, duration: 20, ease: 'linear' }} style={{ whiteSpace: 'nowrap', fontSize: '15rem', fontWeight: 900, lineHeight: 1 }}>
+          DOUBT WE'LL RESPOND • DOUBT WE'LL RESPOND • DOUBT WE'LL RESPOND • DOUBT WE'LL RESPOND
+        </motion.div>
       </div>
 
       {/* Floating Emojis */}
@@ -891,11 +1121,11 @@ const CareersPage = ({ setPage, isLoggedIn, onAuth, onLogout }) => {
               We're Hiring (Desperately)
             </motion.div>
             <motion.h1 variants={fadeInUp} style={{ fontSize: 'clamp(4rem, 10vw, 8rem)', lineHeight: 0.9, margin: '2rem 0', color: 'black', letterSpacing: '-0.06em', fontWeight: '900', textTransform: 'uppercase' }}>
-              Join our cult<br/>
+              Join our cult<br />
               <span style={{ color: '#ef4444', textShadow: '6px 6px 0px rgba(0,0,0,0.1)' }}>erm, team.</span>
             </motion.h1>
             <motion.p variants={fadeInUp} style={{ fontSize: '1.5rem', color: '#334155', maxWidth: '750px', margin: '0 auto', lineHeight: 1.6, fontWeight: '500', border: '3px solid black', padding: '1.5rem', borderRadius: '16px', background: 'white', boxShadow: '8px 8px 0px black' }}>
-               We're disrupting the hyperlocal market by using enough buzzwords to secure our Series A. We need people who thrive in absolute chaos, write zero documentation, and exist exclusively on iced coffee.
+              We're disrupting the hyperlocal market by using enough buzzwords to secure our Series A. We need people who thrive in absolute chaos, write zero documentation, and exist exclusively on iced coffee.
             </motion.p>
           </motion.div>
         </div>
@@ -903,81 +1133,81 @@ const CareersPage = ({ setPage, isLoggedIn, onAuth, onLogout }) => {
 
       <section className="section" style={{ padding: '6rem 0' }}>
         <div className="container" style={{ position: 'relative', zIndex: 1 }}>
-           <h2 style={{ fontSize: '3.5rem', marginBottom: '4rem', fontWeight: '900', textAlign: 'center', letterSpacing: '-0.03em', textTransform: 'uppercase', color: 'black' }}>Our "Industry-Leading" Perks</h2>
-           <div className="grid-3" style={{ gap: '2rem' }}>
-              <motion.div 
-                 whileHover={{ y: -15, scale: 1.05, rotate: -3, boxShadow: '16px 16px 0px black' }} 
-                 transition={{ type: 'spring', stiffness: 300, damping: 15 }}
-                 className="modern-card" style={{ background: '#fca5a5', border: '4px solid black', boxShadow: '8px 8px 0px black', borderRadius: '16px' }}>
-                 <div style={{ fontSize: '3.5rem', marginBottom: '1.5rem', background: 'white', width: '100px', height: '100px', border: '3px solid black', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '24px', boxShadow: '4px 4px 0px black' }}>💸</div>
-                 <h3 style={{ marginBottom: '0.75rem', fontSize: '2rem', fontWeight: '900', color: 'black' }}>Competitive Salary</h3>
-                 <p style={{ color: 'black', fontSize: '1.25rem', lineHeight: 1.5, fontWeight: '500' }}>We pay just enough so you can't quite afford to quit, but definitely not enough to buy a house anytime soon.</p>
-              </motion.div>
-              <motion.div 
-                 whileHover={{ y: -15, scale: 1.05, rotate: 3, boxShadow: '16px 16px 0px black' }} 
-                 transition={{ type: 'spring', stiffness: 300, damping: 15 }}
-                 className="modern-card" style={{ background: '#93c5fd', border: '4px solid black', boxShadow: '8px 8px 0px black', borderRadius: '16px' }}>
-                 <div style={{ fontSize: '3.5rem', marginBottom: '1.5rem', background: 'white', width: '100px', height: '100px', border: '3px solid black', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '24px', boxShadow: '4px 4px 0px black' }}>🏖️</div>
-                 <h3 style={{ marginBottom: '0.75rem', fontSize: '2rem', fontWeight: '900', color: 'black' }}>Unlimited PTO</h3>
-                 <p style={{ color: 'black', fontSize: '1.25rem', lineHeight: 1.5, fontWeight: '500' }}>It's a psychological trap! We offer it knowing no one has ever taken a single day off without feeling immense guilt.</p>
-              </motion.div>
-              <motion.div 
-                 whileHover={{ y: -15, scale: 1.05, rotate: -2, boxShadow: '16px 16px 0px black' }} 
-                 transition={{ type: 'spring', stiffness: 300, damping: 15 }}
-                 className="modern-card" style={{ background: '#fcd34d', border: '4px solid black', boxShadow: '8px 8px 0px black', borderRadius: '16px' }}>
-                 <div style={{ fontSize: '3.5rem', marginBottom: '1.5rem', background: 'white', width: '100px', height: '100px', border: '3px solid black', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '24px', boxShadow: '4px 4px 0px black' }}>🏓</div>
-                 <h3 style={{ marginBottom: '0.75rem', fontSize: '2rem', fontWeight: '900', color: 'black' }}>Mandatory Fun</h3>
-                 <p style={{ color: 'black', fontSize: '1.25rem', lineHeight: 1.5, fontWeight: '500' }}>We bought a ping pong table to pretend we have culture. Thursday evening awkward social events are non-negotiable.</p>
-              </motion.div>
-           </div>
+          <h2 style={{ fontSize: '3.5rem', marginBottom: '4rem', fontWeight: '900', textAlign: 'center', letterSpacing: '-0.03em', textTransform: 'uppercase', color: 'black' }}>Our "Industry-Leading" Perks</h2>
+          <div className="grid-3" style={{ gap: '2rem' }}>
+            <motion.div
+              whileHover={{ y: -15, scale: 1.05, rotate: -3, boxShadow: '16px 16px 0px black' }}
+              transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+              className="modern-card" style={{ background: '#fca5a5', border: '4px solid black', boxShadow: '8px 8px 0px black', borderRadius: '16px' }}>
+              <div style={{ fontSize: '3.5rem', marginBottom: '1.5rem', background: 'white', width: '100px', height: '100px', border: '3px solid black', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '24px', boxShadow: '4px 4px 0px black' }}>💸</div>
+              <h3 style={{ marginBottom: '0.75rem', fontSize: '2rem', fontWeight: '900', color: 'black' }}>Competitive Salary</h3>
+              <p style={{ color: 'black', fontSize: '1.25rem', lineHeight: 1.5, fontWeight: '500' }}>We pay just enough so you can't quite afford to quit, but definitely not enough to buy a house anytime soon.</p>
+            </motion.div>
+            <motion.div
+              whileHover={{ y: -15, scale: 1.05, rotate: 3, boxShadow: '16px 16px 0px black' }}
+              transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+              className="modern-card" style={{ background: '#93c5fd', border: '4px solid black', boxShadow: '8px 8px 0px black', borderRadius: '16px' }}>
+              <div style={{ fontSize: '3.5rem', marginBottom: '1.5rem', background: 'white', width: '100px', height: '100px', border: '3px solid black', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '24px', boxShadow: '4px 4px 0px black' }}>🏖️</div>
+              <h3 style={{ marginBottom: '0.75rem', fontSize: '2rem', fontWeight: '900', color: 'black' }}>Unlimited PTO</h3>
+              <p style={{ color: 'black', fontSize: '1.25rem', lineHeight: 1.5, fontWeight: '500' }}>It's a psychological trap! We offer it knowing no one has ever taken a single day off without feeling immense guilt.</p>
+            </motion.div>
+            <motion.div
+              whileHover={{ y: -15, scale: 1.05, rotate: -2, boxShadow: '16px 16px 0px black' }}
+              transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+              className="modern-card" style={{ background: '#fcd34d', border: '4px solid black', boxShadow: '8px 8px 0px black', borderRadius: '16px' }}>
+              <div style={{ fontSize: '3.5rem', marginBottom: '1.5rem', background: 'white', width: '100px', height: '100px', border: '3px solid black', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '24px', boxShadow: '4px 4px 0px black' }}>🏓</div>
+              <h3 style={{ marginBottom: '0.75rem', fontSize: '2rem', fontWeight: '900', color: 'black' }}>Mandatory Fun</h3>
+              <p style={{ color: 'black', fontSize: '1.25rem', lineHeight: 1.5, fontWeight: '500' }}>We bought a ping pong table to pretend we have culture. Thursday evening awkward social events are non-negotiable.</p>
+            </motion.div>
+          </div>
         </div>
       </section>
 
       <section className="section" style={{ padding: '2rem 0 10rem' }}>
         <div className="container" style={{ position: 'relative', zIndex: 1 }}>
-           <h2 style={{ fontSize: '3.5rem', marginBottom: '4rem', color: 'black', fontWeight: '900', letterSpacing: '-0.03em', textTransform: 'uppercase' }}>Open Requisitions</h2>
-           <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-              
-              <motion.div 
-                 whileHover={{ scale: 1.03, x: 10, y: -5, boxShadow: '16px 16px 0px black' }} 
-                 transition={{ type: 'spring', stiffness: 300, damping: 12 }}
-                 style={{ background: '#a7f3d0', border: '4px solid black', padding: '2.5rem', borderRadius: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', boxShadow: '8px 8px 0px black', position: 'relative', overflow: 'hidden' }}>
-                 <div>
-                    <h3 style={{ fontSize: '2.25rem', marginBottom: '0.75rem', color: 'black', fontWeight: '900' }}>Senior Stack Overflow Specialist <br/><span style={{ fontSize: '1.125rem', color: '#1e293b', fontWeight: 'bold' }}>aka Frontend Developer</span></h3>
-                    <p style={{ color: 'black', margin: 0, fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: '600' }}><MapPin size={24} color="black" /> Remote • Must know how to center a div without crying.</p>
-                 </div>
-                 <motion.div whileHover={{ rotate: 45, scale: 1.2 }} transition={{ type: 'spring' }} style={{ background: 'white', padding: '1.25rem', border: '3px solid black', borderRadius: '50%', color: 'black', boxShadow: '4px 4px 0px black' }}>
-                   <ArrowRight size={36} strokeWidth={3} />
-                 </motion.div>
-              </motion.div>
+          <h2 style={{ fontSize: '3.5rem', marginBottom: '4rem', color: 'black', fontWeight: '900', letterSpacing: '-0.03em', textTransform: 'uppercase' }}>Open Requisitions</h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
 
-              <motion.div 
-                 whileHover={{ scale: 1.03, x: -10, y: -5, boxShadow: '-16px 16px 0px black' }} 
-                 transition={{ type: 'spring', stiffness: 300, damping: 12 }}
-                 style={{ background: '#ddd6fe', border: '4px solid black', padding: '2.5rem', borderRadius: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', boxShadow: '-8px 8px 0px black', position: 'relative', overflow: 'hidden' }}>
-                 <div>
-                    <h3 style={{ fontSize: '2.25rem', marginBottom: '0.75rem', color: 'black', fontWeight: '900' }}>Professional Scope Creeper <br/><span style={{ fontSize: '1.125rem', color: '#1e293b', fontWeight: 'bold' }}>aka Product Manager</span></h3>
-                    <p style={{ color: 'black', margin: 0, fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: '600' }}><MapPin size={24} color="black" /> Nagpur HQ • Expertise in scheduling meetings that could've been emails.</p>
-                 </div>
-                 <motion.div whileHover={{ rotate: -45, scale: 1.2 }} transition={{ type: 'spring' }} style={{ background: 'white', padding: '1.25rem', border: '3px solid black', borderRadius: '50%', color: 'black', boxShadow: '-4px 4px 0px black' }}>
-                   <ArrowRight size={36} strokeWidth={3} />
-                 </motion.div>
+            <motion.div
+              whileHover={{ scale: 1.03, x: 10, y: -5, boxShadow: '16px 16px 0px black' }}
+              transition={{ type: 'spring', stiffness: 300, damping: 12 }}
+              style={{ background: '#a7f3d0', border: '4px solid black', padding: '2.5rem', borderRadius: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', boxShadow: '8px 8px 0px black', position: 'relative', overflow: 'hidden' }}>
+              <div>
+                <h3 style={{ fontSize: '2.25rem', marginBottom: '0.75rem', color: 'black', fontWeight: '900' }}>Senior Stack Overflow Specialist <br /><span style={{ fontSize: '1.125rem', color: '#1e293b', fontWeight: 'bold' }}>aka Frontend Developer</span></h3>
+                <p style={{ color: 'black', margin: 0, fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: '600' }}><MapPin size={24} color="black" /> Remote • Must know how to center a div without crying.</p>
+              </div>
+              <motion.div whileHover={{ rotate: 45, scale: 1.2 }} transition={{ type: 'spring' }} style={{ background: 'white', padding: '1.25rem', border: '3px solid black', borderRadius: '50%', color: 'black', boxShadow: '4px 4px 0px black' }}>
+                <ArrowRight size={36} strokeWidth={3} />
               </motion.div>
+            </motion.div>
 
-              <motion.div 
-                 whileHover={{ scale: 1.03, x: 10, y: -5, boxShadow: '16px 16px 0px black' }} 
-                 transition={{ type: 'spring', stiffness: 300, damping: 12 }}
-                 style={{ background: '#fbcfe8', border: '4px solid black', padding: '2.5rem', borderRadius: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', boxShadow: '8px 8px 0px black', position: 'relative', overflow: 'hidden' }}>
-                 <div>
-                    <h3 style={{ fontSize: '2.25rem', marginBottom: '0.75rem', color: 'black', fontWeight: '900' }}>Ghost Protocol Architect <br/><span style={{ fontSize: '1.125rem', color: '#1e293b', fontWeight: 'bold' }}>aka Backend Engineer</span></h3>
-                    <p style={{ color: 'black', margin: 0, fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: '600' }}><MapPin size={24} color="black" /> Remote • Building APIs nobody asked for and blaming the frontend for latency.</p>
-                 </div>
-                 <motion.div whileHover={{ rotate: 135, scale: 1.2 }} transition={{ type: 'spring' }} style={{ background: 'white', padding: '1.25rem', border: '3px solid black', borderRadius: '50%', color: 'black', boxShadow: '4px 4px 0px black' }}>
-                   <ArrowRight size={36} strokeWidth={3} />
-                 </motion.div>
+            <motion.div
+              whileHover={{ scale: 1.03, x: -10, y: -5, boxShadow: '-16px 16px 0px black' }}
+              transition={{ type: 'spring', stiffness: 300, damping: 12 }}
+              style={{ background: '#ddd6fe', border: '4px solid black', padding: '2.5rem', borderRadius: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', boxShadow: '-8px 8px 0px black', position: 'relative', overflow: 'hidden' }}>
+              <div>
+                <h3 style={{ fontSize: '2.25rem', marginBottom: '0.75rem', color: 'black', fontWeight: '900' }}>Professional Scope Creeper <br /><span style={{ fontSize: '1.125rem', color: '#1e293b', fontWeight: 'bold' }}>aka Product Manager</span></h3>
+                <p style={{ color: 'black', margin: 0, fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: '600' }}><MapPin size={24} color="black" /> Nagpur HQ • Expertise in scheduling meetings that could've been emails.</p>
+              </div>
+              <motion.div whileHover={{ rotate: -45, scale: 1.2 }} transition={{ type: 'spring' }} style={{ background: 'white', padding: '1.25rem', border: '3px solid black', borderRadius: '50%', color: 'black', boxShadow: '-4px 4px 0px black' }}>
+                <ArrowRight size={36} strokeWidth={3} />
               </motion.div>
+            </motion.div>
 
-           </div>
+            <motion.div
+              whileHover={{ scale: 1.03, x: 10, y: -5, boxShadow: '16px 16px 0px black' }}
+              transition={{ type: 'spring', stiffness: 300, damping: 12 }}
+              style={{ background: '#fbcfe8', border: '4px solid black', padding: '2.5rem', borderRadius: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', boxShadow: '8px 8px 0px black', position: 'relative', overflow: 'hidden' }}>
+              <div>
+                <h3 style={{ fontSize: '2.25rem', marginBottom: '0.75rem', color: 'black', fontWeight: '900' }}>Ghost Protocol Architect <br /><span style={{ fontSize: '1.125rem', color: '#1e293b', fontWeight: 'bold' }}>aka Backend Engineer</span></h3>
+                <p style={{ color: 'black', margin: 0, fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: '600' }}><MapPin size={24} color="black" /> Remote • Building APIs nobody asked for and blaming the frontend for latency.</p>
+              </div>
+              <motion.div whileHover={{ rotate: 135, scale: 1.2 }} transition={{ type: 'spring' }} style={{ background: 'white', padding: '1.25rem', border: '3px solid black', borderRadius: '50%', color: 'black', boxShadow: '4px 4px 0px black' }}>
+                <ArrowRight size={36} strokeWidth={3} />
+              </motion.div>
+            </motion.div>
+
+          </div>
         </div>
       </section>
     </motion.div>
@@ -988,7 +1218,7 @@ const CareersPage = ({ setPage, isLoggedIn, onAuth, onLogout }) => {
 const EventsPage = ({ setPage, isLoggedIn, onAuth, onLogout }) => {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
-    window.scrollTo(0, 0); 
+    window.scrollTo(0, 0);
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
@@ -1003,7 +1233,7 @@ const EventsPage = ({ setPage, isLoggedIn, onAuth, onLogout }) => {
   };
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20, transition: { duration: 0.2 } }}
@@ -1011,19 +1241,19 @@ const EventsPage = ({ setPage, isLoggedIn, onAuth, onLogout }) => {
       style={{ background: '#f8fafc', minHeight: '100vh', position: 'relative', overflow: 'hidden' }}
     >
       <Navbar scrolled={scrolled} setPage={setPage} isDark={false} isLoggedIn={isLoggedIn} onAuth={onAuth} onLogout={onLogout} currentPage="events" />
-      
+
       {/* GenZ Marquee Background & Neo-brutalist Patterns */}
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundImage: 'radial-gradient(#10b981 2px, transparent 2px)', backgroundSize: '60px 60px', opacity: 0.1, pointerEvents: 'none' }} />
-      
+
       <div style={{ position: 'absolute', top: '15%', left: '-20%', width: '150%', opacity: 0.05, pointerEvents: 'none', transform: 'rotate(-5deg)', zIndex: 0 }}>
-         <motion.div animate={{ x: [0, -1000] }} transition={{ repeat: Infinity, duration: 25, ease: 'linear' }} style={{ whiteSpace: 'nowrap', fontSize: '15rem', fontWeight: 900, lineHeight: 1 }}>
-            FOMO IS REAL • BE THERE OR BE SQUARE • FOMO IS REAL • BE THERE OR BE SQUARE
-         </motion.div>
+        <motion.div animate={{ x: [0, -1000] }} transition={{ repeat: Infinity, duration: 25, ease: 'linear' }} style={{ whiteSpace: 'nowrap', fontSize: '15rem', fontWeight: 900, lineHeight: 1 }}>
+          FOMO IS REAL • BE THERE OR BE SQUARE • FOMO IS REAL • BE THERE OR BE SQUARE
+        </motion.div>
       </div>
       <div style={{ position: 'absolute', top: '75%', left: '-20%', width: '150%', opacity: 0.05, pointerEvents: 'none', transform: 'rotate(5deg)', zIndex: 0 }}>
-         <motion.div animate={{ x: [-1000, 0] }} transition={{ repeat: Infinity, duration: 20, ease: 'linear' }} style={{ whiteSpace: 'nowrap', fontSize: '15rem', fontWeight: 900, lineHeight: 1 }}>
-            EXCLUSIVE DROPS • VIP ONLY • EXCLUSIVE DROPS • VIP ONLY • EXCLUSIVE DROPS
-         </motion.div>
+        <motion.div animate={{ x: [-1000, 0] }} transition={{ repeat: Infinity, duration: 20, ease: 'linear' }} style={{ whiteSpace: 'nowrap', fontSize: '15rem', fontWeight: 900, lineHeight: 1 }}>
+          EXCLUSIVE DROPS • VIP ONLY • EXCLUSIVE DROPS • VIP ONLY • EXCLUSIVE DROPS
+        </motion.div>
       </div>
 
       {/* Floating Emojis */}
@@ -1038,11 +1268,11 @@ const EventsPage = ({ setPage, isLoggedIn, onAuth, onLogout }) => {
               Happening Now
             </motion.div>
             <motion.h1 variants={fadeInUp} style={{ fontSize: 'clamp(4rem, 10vw, 8rem)', lineHeight: 0.9, margin: '2rem 0', color: 'black', letterSpacing: '-0.06em', fontWeight: '900', textTransform: 'uppercase' }}>
-              Local <br/>
+              Local <br />
               <span style={{ color: '#10b981', textShadow: '6px 6px 0px rgba(0,0,0,0.1)' }}>Fixtures.</span>
             </motion.h1>
             <motion.p variants={fadeInUp} style={{ fontSize: '1.5rem', color: '#334155', maxWidth: '750px', margin: '0 auto', lineHeight: 1.6, fontWeight: '500', border: '3px solid black', padding: '1.5rem', borderRadius: '16px', background: 'white', boxShadow: '8px 8px 0px black' }}>
-               Skip the algorithm. Find out where people actually exist in real life. Underground meetups, founder coffees, and warehouse raves. 
+              Skip the algorithm. Find out where people actually exist in real life. Underground meetups, founder coffees, and warehouse raves.
             </motion.p>
           </motion.div>
         </div>
@@ -1050,73 +1280,73 @@ const EventsPage = ({ setPage, isLoggedIn, onAuth, onLogout }) => {
 
       <section className="section" style={{ padding: '4rem 0 10rem' }}>
         <div className="container" style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', gap: '3rem' }}>
-           
-           {/* EXCLUSIVE PITCH FIRE EVENT */}
-           <motion.div 
-               whileHover={{ scale: 1.02, x: 10, y: -10, boxShadow: '30px 30px 0px #10b981' }} 
-               transition={{ type: 'spring', stiffness: 300, damping: 15 }}
-               style={{ background: '#fcd34d', border: '6px solid black', borderRadius: '32px', display: 'flex', flexDirection: 'column', overflow: 'hidden', cursor: 'pointer', boxShadow: '20px 20px 0px black', minHeight: '600px' }}>
-               
-               <div style={{ background: 'black', color: 'white', padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <div style={{ background: '#ef4444', width: '15px', height: '15px', borderRadius: '50%', boxShadow: '0 0 15px #ef4444' }}></div>
-                    <span style={{ fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.1em' }}>LIVE EVENT</span>
+
+          {/* EXCLUSIVE PITCH FIRE EVENT */}
+          <motion.div
+            whileHover={{ scale: 1.02, x: 10, y: -10, boxShadow: '30px 30px 0px #10b981' }}
+            transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+            style={{ background: '#fcd34d', border: '6px solid black', borderRadius: '32px', display: 'flex', flexDirection: 'column', overflow: 'hidden', cursor: 'pointer', boxShadow: '20px 20px 0px black', minHeight: '600px' }}>
+
+            <div style={{ background: 'black', color: 'white', padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <div style={{ background: '#ef4444', width: '15px', height: '15px', borderRadius: '50%', boxShadow: '0 0 15px #ef4444' }}></div>
+                <span style={{ fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.1em' }}>LIVE EVENT</span>
+              </div>
+              <div style={{ fontWeight: '900' }}>Coming Soon</div>
+            </div>
+
+            <div style={{ display: 'flex', flex: 1, flexWrap: 'wrap' }}>
+              <div style={{ flex: '1.5', padding: '4rem', display: 'flex', flexDirection: 'column', justifyContent: 'center', borderRight: '6px solid black', minWidth: '350px' }}>
+                <div style={{ background: 'white', color: 'black', border: '4px solid black', padding: '0.5rem 1.5rem', borderRadius: '12px', fontWeight: '900', textTransform: 'uppercase', width: 'fit-content', marginBottom: '2rem', boxShadow: '6px 6px 0px black', fontSize: '1.25rem' }}>🔥 THE MAIN STAGE</div>
+
+                <h3 style={{ fontSize: 'clamp(3rem, 8vw, 6rem)', marginBottom: '1.5rem', color: 'black', fontWeight: '900', lineHeight: 0.85, letterSpacing: '-0.04em' }}>FOUNDERS <br /><span style={{ color: '#ef4444' }}>ARENA.</span></h3>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginTop: '2rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', fontSize: '1.75rem', fontWeight: '800' }}>
+                    <span style={{ fontSize: '2.5rem' }}>⏰</span> Coming Soon
                   </div>
-                  <div style={{ fontWeight: '900' }}>MAY 9</div>
-               </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', fontSize: '1.75rem', fontWeight: '800' }}>
+                    <span style={{ fontSize: '2.5rem' }}>📍</span> Coming Soon
+                  </div>
+                </div>
 
-               <div style={{ display: 'flex', flex: 1, flexWrap: 'wrap' }}>
-                 <div style={{ flex: '1.5', padding: '4rem', display: 'flex', flexDirection: 'column', justifyContent: 'center', borderRight: '6px solid black', minWidth: '350px' }}>
-                    <div style={{ background: 'white', color: 'black', border: '4px solid black', padding: '0.5rem 1.5rem', borderRadius: '12px', fontWeight: '900', textTransform: 'uppercase', width: 'fit-content', marginBottom: '2rem', boxShadow: '6px 6px 0px black', fontSize: '1.25rem' }}>🔥 THE MAIN STAGE</div>
-                    
-                    <h3 style={{ fontSize: 'clamp(3rem, 8vw, 6rem)', marginBottom: '1.5rem', color: 'black', fontWeight: '900', lineHeight: 0.85, letterSpacing: '-0.04em' }}>FOUNDERS <br/><span style={{ color: '#ef4444' }}>ARENA.</span></h3>
-                    
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginTop: '2rem' }}>
-                       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', fontSize: '1.75rem', fontWeight: '800' }}>
-                          <span style={{ fontSize: '2.5rem' }}>⏰</span> Friday, May 2 • 9:30 AM to 1:30 PM
-                       </div>
-                       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', fontSize: '1.75rem', fontWeight: '800' }}>
-                          <span style={{ fontSize: '2.5rem' }}>📍</span> Aromas Cafe & Bistro
-                       </div>
-                    </div>
+                <p style={{ color: 'black', fontSize: '1.5rem', fontWeight: '600', marginTop: '3rem', lineHeight: 1.4, maxWidth: '500px' }}>
+                  3 Minutes. 2 Founders. High stakes roasting by esteemed judges. No slides, no mercy. Survive the fire and get funded.
+                </p>
+              </div>
 
-                    <p style={{ color: 'black', fontSize: '1.5rem', fontWeight: '600', marginTop: '3rem', lineHeight: 1.4, maxWidth: '500px' }}>
-                      3 Minutes. 2 Founders. High stakes roasting by esteemed judges. No slides, no mercy. Survive the fire and get funded.
-                    </p>
-                 </div>
-                 
-                 <div style={{ flex: '1', background: '#f472b6', padding: '4rem', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', minWidth: '300px' }}>
-                    <div style={{ background: 'white', border: '4px solid black', padding: '2rem', borderRadius: '24px', boxShadow: '12px 12px 0px black', transform: 'rotate(5deg)' }}>
-                      <span style={{ display: 'block', fontSize: '1.25rem', fontWeight: '900', color: '#64748b', marginBottom: '0.5rem' }}>ENTRY FEE</span>
-                      <h2 style={{ fontSize: '5rem', color: 'black', fontWeight: '900', lineHeight: 1, margin: 0 }}>₹1200</h2>
-                    </div>
+              <div style={{ flex: '1', background: '#f472b6', padding: '4rem', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', minWidth: '300px' }}>
+                <div style={{ background: 'white', border: '4px solid black', padding: '2rem', borderRadius: '24px', boxShadow: '12px 12px 0px black', transform: 'rotate(5deg)' }}>
+                  <span style={{ display: 'block', fontSize: '1.25rem', fontWeight: '900', color: '#64748b', marginBottom: '0.5rem' }}>ENTRY FEE</span>
+                  <h2 style={{ fontSize: '5rem', color: 'black', fontWeight: '900', lineHeight: 1, margin: 0 }}>₹1200</h2>
+                </div>
 
-                    <div style={{ marginTop: '4rem', display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
-                      <motion.button 
-                        onClick={handleRegisterClick} 
-                        whileHover={{ scale: 1.05, rotate: -2, boxShadow: '0px 10px 0px black' }} 
-                        whileTap={{ scale: 0.95 }} 
-                        style={{ background: 'black', color: 'white', border: '4px solid black', padding: '1.5rem 3rem', borderRadius: '16px', fontSize: '2rem', fontWeight: '900', cursor: 'pointer', textTransform: 'uppercase', width: '100%' }}>
-                        GRAB A SLOT 🚀
-                      </motion.button>
-                      <p style={{ fontWeight: '800', fontSize: '1.125rem', color: 'black', opacity: 0.7 }}>Limited to 50 Teams Only</p>
-                    </div>
+                <div style={{ marginTop: '4rem', display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
+                  <motion.button
+                    onClick={handleRegisterClick}
+                    whileHover={{ scale: 1.05, rotate: -2, boxShadow: '0px 10px 0px black' }}
+                    whileTap={{ scale: 0.95 }}
+                    style={{ background: 'black', color: 'white', border: '4px solid black', padding: '1.5rem 3rem', borderRadius: '16px', fontSize: '2rem', fontWeight: '900', cursor: 'pointer', textTransform: 'uppercase', width: '100%' }}>
+                    GRAB A SLOT 🚀
+                  </motion.button>
+                  <p style={{ fontWeight: '800', fontSize: '1.125rem', color: 'black', opacity: 0.7 }}>Limited to 50 Teams Only</p>
+                </div>
 
-                    <div style={{ marginTop: '3rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                       <div style={{ display: 'flex', marginLeft: '0.5rem' }}>
-                          {[1,2,3,4].map(i => (
-                            <div key={i} style={{ width: '45px', height: '45px', background: `hsl(${i * 45}, 70%, 60%)`, border: '3px solid black', borderRadius: '50%', marginLeft: '-15px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>👤</div>
-                          ))}
-                       </div>
-                       <span style={{ fontSize: '1.125rem', fontWeight: '900', color: 'black' }}>+16 Founders joined</span>
-                    </div>
-                 </div>
-               </div>
-            </motion.div>
-         </div>
-       </section>
-     </motion.div>
-   );
+                <div style={{ marginTop: '3rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <div style={{ display: 'flex', marginLeft: '0.5rem' }}>
+                    {[1, 2, 3, 4].map(i => (
+                      <div key={i} style={{ width: '45px', height: '45px', background: `hsl(${i * 45}, 70%, 60%)`, border: '3px solid black', borderRadius: '50%', marginLeft: '-15px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>👤</div>
+                    ))}
+                  </div>
+                  <span style={{ fontSize: '1.125rem', fontWeight: '900', color: 'black' }}>+16 Founders joined</span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+    </motion.div>
+  );
 };
 
 const PitchFireRegistration = ({ setPage, user }) => {
@@ -1190,7 +1420,7 @@ const PitchFireRegistration = ({ setPage, user }) => {
         ticket_id: result,
         payment_status: 'success'
       });
-      
+
       if (dbError) throw dbError;
 
       // 2. Send email notification
@@ -1230,7 +1460,7 @@ const PitchFireRegistration = ({ setPage, user }) => {
   };
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -1238,42 +1468,42 @@ const PitchFireRegistration = ({ setPage, user }) => {
     >
       {/* BACKGROUND MOVING TEXT MARQUEE */}
       <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 0, overflow: 'hidden', opacity: 0.2 }}>
-          <motion.div 
-            animate={{ x: [-2000, 0] }} 
-            transition={{ repeat: Infinity, duration: 30, ease: 'linear' }} 
-            style={{ fontSize: '20rem', fontWeight: 900, color: 'white', whiteSpace: 'nowrap', lineHeight: 1 }}
-          >
-            FOUNDERS ARENA MAY 9 • FOUNDERS ARENA MAY 9 • FOUNDERS ARENA MAY 9
-          </motion.div>
-          <motion.div 
-            animate={{ x: [0, -2000] }} 
-            transition={{ repeat: Infinity, duration: 25, ease: 'linear' }} 
-            style={{ fontSize: '20rem', fontWeight: 900, color: '#ef4444', whiteSpace: 'nowrap', lineHeight: 1 }}
-          >
-            NAGPUR STARTUPS • NAGPUR STARTUPS • NAGPUR STARTUPS
-          </motion.div>
+        <motion.div
+          animate={{ x: [-2000, 0] }}
+          transition={{ repeat: Infinity, duration: 30, ease: 'linear' }}
+          style={{ fontSize: '20rem', fontWeight: 900, color: 'white', whiteSpace: 'nowrap', lineHeight: 1 }}
+        >
+          FOUNDERS ARENA MAY 9 • FOUNDERS ARENA MAY 9 • FOUNDERS ARENA MAY 9
+        </motion.div>
+        <motion.div
+          animate={{ x: [0, -2000] }}
+          transition={{ repeat: Infinity, duration: 25, ease: 'linear' }}
+          style={{ fontSize: '20rem', fontWeight: 900, color: '#ef4444', whiteSpace: 'nowrap', lineHeight: 1 }}
+        >
+          NAGPUR STARTUPS • NAGPUR STARTUPS • NAGPUR STARTUPS
+        </motion.div>
       </div>
 
       <div style={{ cursor: 'pointer', position: 'absolute', top: '2rem', left: '2rem', zIndex: 100, background: 'white', border: '3px solid black', padding: '0.75rem 1.5rem', borderRadius: '12px', boxShadow: '4px 4px 0px black', display: 'flex', gap: '0.5rem', alignItems: 'center', fontWeight: '900' }} onClick={() => setPage('events')}>
-         <ArrowRight size={24} style={{ transform: 'rotate(180deg)' }} /> EXIT
+        <ArrowRight size={24} style={{ transform: 'rotate(180deg)' }} /> EXIT
       </div>
 
       {/* Global Loading Overlay */}
       <AnimatePresence>
         {loading && (
-           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-             <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ repeat: Infinity, duration: 1 }} style={{ background: '#fcd34d', color: 'black', padding: '2rem 4rem', borderRadius: '24px', border: '6px solid black', fontWeight: '900', fontSize: '2rem', boxShadow: '15px 15px 0px #ef4444', textAlign: 'center' }}>
-               {loading}
-             </motion.div>
-           </motion.div>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ repeat: Infinity, duration: 1 }} style={{ background: '#fcd34d', color: 'black', padding: '2rem 4rem', borderRadius: '24px', border: '6px solid black', fontWeight: '900', fontSize: '2rem', boxShadow: '15px 15px 0px #ef4444', textAlign: 'center' }}>
+              {loading}
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
 
       <div style={{ width: '100%', maxWidth: '650px', position: 'relative', zIndex: 10 }}>
-        
+
         {/* Step Progress */}
         <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
-          {[1,2,3,4].map(s => (
+          {[1, 2, 3, 4].map(s => (
             <div key={s} style={{ flex: 1, height: '12px', background: s <= step ? (s === 4 ? '#34d399' : '#ef4444') : '#334155', border: '3px solid black', borderRadius: '6px', transition: 'all 0.4s' }}></div>
           ))}
         </div>
@@ -1281,103 +1511,103 @@ const PitchFireRegistration = ({ setPage, user }) => {
         <AnimatePresence mode="wait">
           {step === 1 && (
             <motion.div key="step1" initial={{ x: 50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -50, opacity: 0 }} style={{ background: '#f8fafc', border: '6px solid black', padding: '3.5rem', borderRadius: '32px', boxShadow: '20px 20px 0px black' }}>
-               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2.5rem' }}>
-                 <h2 style={{ fontSize: '3rem', fontWeight: '900', textTransform: 'uppercase', lineHeight: 1 }}>TEAM <br/><span style={{ color: '#ef4444' }}>SETUP.</span></h2>
-                 <div style={{ fontSize: '3rem' }}>🚀</div>
-               </div>
-               
-               <form onSubmit={handleNext} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2.5rem' }}>
+                <h2 style={{ fontSize: '3rem', fontWeight: '900', textTransform: 'uppercase', lineHeight: 1 }}>TEAM <br /><span style={{ color: '#ef4444' }}>SETUP.</span></h2>
+                <div style={{ fontSize: '3rem' }}>🚀</div>
+              </div>
+
+              <form onSubmit={handleNext} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                <div>
+                  <label style={labelStyle}>Company / Team Name</label>
+                  <input required placeholder="eg. Ghost Protocol" value={teamData.teamName} onChange={e => setTeamData({ ...teamData, teamName: e.target.value })} style={inputStyle} />
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
                   <div>
-                     <label style={labelStyle}>Company / Team Name</label>
-                     <input required placeholder="eg. Ghost Protocol" value={teamData.teamName} onChange={e => setTeamData({...teamData, teamName: e.target.value})} style={inputStyle} />
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-                    <div>
-                       <label style={labelStyle}>Founder 1</label>
-                       <input required placeholder="Name" value={teamData.member1} onChange={e => setTeamData({...teamData, member1: e.target.value})} style={inputStyle} />
-                    </div>
-                    <div>
-                       <label style={labelStyle}>Founder 2</label>
-                       <input required placeholder="Name" value={teamData.member2} onChange={e => setTeamData({...teamData, member2: e.target.value})} style={inputStyle} />
-                    </div>
+                    <label style={labelStyle}>Founder 1</label>
+                    <input required placeholder="Name" value={teamData.member1} onChange={e => setTeamData({ ...teamData, member1: e.target.value })} style={inputStyle} />
                   </div>
                   <div>
-                     <label style={labelStyle}>The Pitch (One sentence roast)</label>
-                     <textarea required rows={3} placeholder="We solve problems that don't exist..." value={teamData.idea} onChange={e => setTeamData({...teamData, idea: e.target.value})} style={{ ...inputStyle, resize: 'none' }} />
+                    <label style={labelStyle}>Founder 2</label>
+                    <input required placeholder="Name" value={teamData.member2} onChange={e => setTeamData({ ...teamData, member2: e.target.value })} style={inputStyle} />
                   </div>
-                  <motion.button whileHover={{ scale: 1.02, y: -5, boxShadow: '0px 10px 0px black' }} whileTap={{ scale: 0.98 }} type="submit" style={{ background: 'black', color: 'white', border: '4px solid black', padding: '1.5rem', borderRadius: '16px', fontWeight: '900', fontSize: '1.5rem', cursor: 'pointer', marginTop: '1rem', textTransform: 'uppercase' }}>Continue to Verify →</motion.button>
-               </form>
+                </div>
+                <div>
+                  <label style={labelStyle}>The Pitch (One sentence roast)</label>
+                  <textarea required rows={3} placeholder="We solve problems that don't exist..." value={teamData.idea} onChange={e => setTeamData({ ...teamData, idea: e.target.value })} style={{ ...inputStyle, resize: 'none' }} />
+                </div>
+                <motion.button whileHover={{ scale: 1.02, y: -5, boxShadow: '0px 10px 0px black' }} whileTap={{ scale: 0.98 }} type="submit" style={{ background: 'black', color: 'white', border: '4px solid black', padding: '1.5rem', borderRadius: '16px', fontWeight: '900', fontSize: '1.5rem', cursor: 'pointer', marginTop: '1rem', textTransform: 'uppercase' }}>Continue to Verify →</motion.button>
+              </form>
             </motion.div>
           )}
 
           {step === 2 && (
             <motion.div key="step2" initial={{ x: 50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -50, opacity: 0 }} style={{ background: '#f8fafc', border: '6px solid black', padding: '3.5rem', borderRadius: '32px', boxShadow: '20px 20px 0px black' }}>
-               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2.5rem' }}>
-                 <h2 style={{ fontSize: '3rem', fontWeight: '900', textTransform: 'uppercase', lineHeight: 1 }}>EMAIL <br/><span style={{ color: '#3b82f6' }}>AUTH.</span></h2>
-                 <div style={{ fontSize: '3rem' }}>🔒</div>
-               </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2.5rem' }}>
+                <h2 style={{ fontSize: '3rem', fontWeight: '900', textTransform: 'uppercase', lineHeight: 1 }}>EMAIL <br /><span style={{ color: '#3b82f6' }}>AUTH.</span></h2>
+                <div style={{ fontSize: '3rem' }}>🔒</div>
+              </div>
 
-               {!otpSent ? (
-                 <form onSubmit={sendOtp} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-                    <div>
-                       <label style={labelStyle}>Founder Email</label>
-                       <input required type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@startup.com" style={inputStyle} />
-                       <p style={{ marginTop: '1rem', fontWeight: '700', color: '#64748b' }}>We'll send your digital ticket here.</p>
-                    </div>
-                    <motion.button whileHover={{ scale: 1.02, y: -5 }} whileTap={{ scale: 0.98 }} type="submit" style={{ background: '#3b82f6', color: 'white', border: '4px solid black', padding: '1.5rem', borderRadius: '16px', fontWeight: '900', fontSize: '1.5rem', boxShadow: '6px 6px 0px black', cursor: 'pointer', textTransform: 'uppercase' }}>Request PIN</motion.button>
-                 </form>
-               ) : (
-                 <form onSubmit={verifyOtp} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-                    <div>
-                       <label style={labelStyle}>6-Digit PIN</label>
-                       <input required type="text" maxLength={6} value={otp} onChange={e => setOtp(e.target.value)} style={{ ...inputStyle, fontSize: '3rem', textAlign: 'center', letterSpacing: '0.75rem', background: '#fef9c3' }} />
-                       <p style={{ marginTop: '1rem', fontWeight: '700', color: '#ef4444' }}>Expiring in 2 minutes!</p>
-                    </div>
-                    <motion.button whileHover={{ scale: 1.02, y: -5 }} whileTap={{ scale: 0.98 }} type="submit" style={{ background: '#34d399', color: 'black', border: '4px solid black', padding: '1.5rem', borderRadius: '16px', fontWeight: '900', fontSize: '1.5rem', boxShadow: '6px 6px 0px black', cursor: 'pointer', textTransform: 'uppercase' }}>Confirm Identity</motion.button>
-                    <p onClick={() => setOtpSent(false)} style={{ textAlign: 'center', fontWeight: '900', cursor: 'pointer', textDecoration: 'underline' }}>Resend code?</p>
-                 </form>
-               )}
+              {!otpSent ? (
+                <form onSubmit={sendOtp} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                  <div>
+                    <label style={labelStyle}>Founder Email</label>
+                    <input required type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@startup.com" style={inputStyle} />
+                    <p style={{ marginTop: '1rem', fontWeight: '700', color: '#64748b' }}>We'll send your digital ticket here.</p>
+                  </div>
+                  <motion.button whileHover={{ scale: 1.02, y: -5 }} whileTap={{ scale: 0.98 }} type="submit" style={{ background: '#3b82f6', color: 'white', border: '4px solid black', padding: '1.5rem', borderRadius: '16px', fontWeight: '900', fontSize: '1.5rem', boxShadow: '6px 6px 0px black', cursor: 'pointer', textTransform: 'uppercase' }}>Request PIN</motion.button>
+                </form>
+              ) : (
+                <form onSubmit={verifyOtp} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                  <div>
+                    <label style={labelStyle}>6-Digit PIN</label>
+                    <input required type="text" maxLength={6} value={otp} onChange={e => setOtp(e.target.value)} style={{ ...inputStyle, fontSize: '3rem', textAlign: 'center', letterSpacing: '0.75rem', background: '#fef9c3' }} />
+                    <p style={{ marginTop: '1rem', fontWeight: '700', color: '#ef4444' }}>Expiring in 2 minutes!</p>
+                  </div>
+                  <motion.button whileHover={{ scale: 1.02, y: -5 }} whileTap={{ scale: 0.98 }} type="submit" style={{ background: '#34d399', color: 'black', border: '4px solid black', padding: '1.5rem', borderRadius: '16px', fontWeight: '900', fontSize: '1.5rem', boxShadow: '6px 6px 0px black', cursor: 'pointer', textTransform: 'uppercase' }}>Confirm Identity</motion.button>
+                  <p onClick={() => setOtpSent(false)} style={{ textAlign: 'center', fontWeight: '900', cursor: 'pointer', textDecoration: 'underline' }}>Resend code?</p>
+                </form>
+              )}
             </motion.div>
           )}
 
           {step === 3 && (
             <motion.div key="step3" initial={{ x: 50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -50, opacity: 0 }} style={{ background: '#f8fafc', border: '6px solid black', padding: 'clamp(1.5rem, 8vw, 3.5rem)', borderRadius: '24px', boxShadow: '10px 10px 0px black', textAlign: 'center' }}>
-               <h2 style={{ fontSize: 'clamp(2rem, 10vw, 3rem)', fontWeight: '900', textTransform: 'uppercase', marginBottom: '1rem' }}>GET <span style={{ color: '#a78bfa' }}>ENTRY.</span></h2>
-               <p style={{ fontWeight: '800', fontSize: '1.5rem', marginBottom: '2.5rem' }}>Scan the QR to secure your team slot.</p>
-               
-               <div style={{ background: 'white', padding: '2rem', display: 'inline-block', borderRadius: '24px', border: '5px solid black', marginBottom: '2.5rem', boxShadow: '12px 12px 0px rgba(167,139,250,0.3)' }}>
-                  <div style={{ width: '220px', height: '220px', background: 'white', backgroundImage: 'url("https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=upi://pay?pa=mock@upi&pn=Bartr&am=1200.00&tr=mock-txn")', backgroundSize: 'cover' }}></div>
-                  <div style={{ marginTop: '1.5rem', fontSize: '2.5rem', fontWeight: '900' }}>₹1200</div>
-               </div>
-               
-               <motion.button onClick={processPayment} whileHover={{ scale: 1.02, y: -5 }} whileTap={{ scale: 0.98 }} style={{ width: '100%', background: '#a78bfa', color: 'black', border: '4px solid black', padding: '1.5rem', borderRadius: '16px', fontWeight: '900', fontSize: '1.5rem', boxShadow: '8px 8px 0px black', cursor: 'pointer', textTransform: 'uppercase' }}>I've Paid! Generate Ticket</motion.button>
+              <h2 style={{ fontSize: 'clamp(2rem, 10vw, 3rem)', fontWeight: '900', textTransform: 'uppercase', marginBottom: '1rem' }}>GET <span style={{ color: '#a78bfa' }}>ENTRY.</span></h2>
+              <p style={{ fontWeight: '800', fontSize: '1.5rem', marginBottom: '2.5rem' }}>Scan the QR to secure your team slot.</p>
+
+              <div style={{ background: 'white', padding: '2rem', display: 'inline-block', borderRadius: '24px', border: '5px solid black', marginBottom: '2.5rem', boxShadow: '12px 12px 0px rgba(167,139,250,0.3)' }}>
+                <div style={{ width: '220px', height: '220px', background: 'white', backgroundImage: 'url("https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=upi://pay?pa=mock@upi&pn=Bartr&am=1200.00&tr=mock-txn")', backgroundSize: 'cover' }}></div>
+                <div style={{ marginTop: '1.5rem', fontSize: '2.5rem', fontWeight: '900' }}>₹1200</div>
+              </div>
+
+              <motion.button onClick={processPayment} whileHover={{ scale: 1.02, y: -5 }} whileTap={{ scale: 0.98 }} style={{ width: '100%', background: '#a78bfa', color: 'black', border: '4px solid black', padding: '1.5rem', borderRadius: '16px', fontWeight: '900', fontSize: '1.5rem', boxShadow: '8px 8px 0px black', cursor: 'pointer', textTransform: 'uppercase' }}>I've Paid! Generate Ticket</motion.button>
             </motion.div>
           )}
 
           {step === 4 && (
             <motion.div key="step4" initial={{ scale: 0.5, rotate: -10, opacity: 0 }} animate={{ scale: 1, rotate: 0, opacity: 1 }} style={{ background: '#fff', border: '6px solid black', borderRadius: '24px', boxShadow: '15px 15px 0px black', width: '100%', overflow: 'hidden' }}>
-               <div style={{ background: '#ef4444', padding: 'clamp(1.5rem, 8vw, 3rem)', color: 'white', borderBottom: '6px dashed black', textAlign: 'center' }}>
-                 <motion.h2 animate={{ scale: [1, 1.1, 1] }} transition={{ repeat: Infinity, duration: 2 }} style={{ fontSize: 'clamp(2.5rem, 12vw, 4rem)', fontWeight: '900', margin: 0, textShadow: '4px 4px 0px black', letterSpacing: '-0.05em' }}>SUCCESS! 🎫</motion.h2>
-                 <p style={{ fontWeight: '900', fontSize: '1.2rem', marginTop: '1rem', textTransform: 'uppercase' }}>You are officially in the fire.</p>
-               </div>
-               <div style={{ padding: 'clamp(1.5rem, 8vw, 4rem)', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-                    <div style={{ background: '#f1f5f9', padding: '1.5rem', borderRadius: '16px', border: '3px solid black' }}>
-                      <span style={{ color: '#64748b', fontWeight: '900', fontSize: '0.9rem', textTransform: 'uppercase' }}>TEAM</span>
-                      <div style={{ fontSize: '1.75rem', fontWeight: '900', color: 'black' }}>{teamData.teamName}</div>
-                    </div>
-                    <div style={{ background: '#f1f5f9', padding: '1.5rem', borderRadius: '16px', border: '3px solid black' }}>
-                      <span style={{ color: '#64748b', fontWeight: '900', fontSize: '0.9rem', textTransform: 'uppercase' }}>SLOT</span>
-                      <div style={{ fontSize: '1.75rem', fontWeight: '900', color: '#10b981' }}>CONFIRMED</div>
-                    </div>
+              <div style={{ background: '#ef4444', padding: 'clamp(1.5rem, 8vw, 3rem)', color: 'white', borderBottom: '6px dashed black', textAlign: 'center' }}>
+                <motion.h2 animate={{ scale: [1, 1.1, 1] }} transition={{ repeat: Infinity, duration: 2 }} style={{ fontSize: 'clamp(2.5rem, 12vw, 4rem)', fontWeight: '900', margin: 0, textShadow: '4px 4px 0px black', letterSpacing: '-0.05em' }}>SUCCESS! 🎫</motion.h2>
+                <p style={{ fontWeight: '900', fontSize: '1.2rem', marginTop: '1rem', textTransform: 'uppercase' }}>You are officially in the fire.</p>
+              </div>
+              <div style={{ padding: 'clamp(1.5rem, 8vw, 4rem)', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                  <div style={{ background: '#f1f5f9', padding: '1.5rem', borderRadius: '16px', border: '3px solid black' }}>
+                    <span style={{ color: '#64748b', fontWeight: '900', fontSize: '0.9rem', textTransform: 'uppercase' }}>TEAM</span>
+                    <div style={{ fontSize: '1.75rem', fontWeight: '900', color: 'black' }}>{teamData.teamName}</div>
                   </div>
-                  <div style={{ background: '#000', color: '#34d399', padding: '2rem', borderRadius: '16px', border: '3px solid #34d399', textAlign: 'center' }}>
-                      <span style={{ fontWeight: '900', textTransform: 'uppercase', fontSize: '1rem', display: 'block', marginBottom: '0.5rem' }}>TICKET SERIAL</span>
-                      <div style={{ fontSize: '2.5rem', fontWeight: '900', letterSpacing: '0.2em' }}>{ticketId}</div>
+                  <div style={{ background: '#f1f5f9', padding: '1.5rem', borderRadius: '16px', border: '3px solid black' }}>
+                    <span style={{ color: '#64748b', fontWeight: '900', fontSize: '0.9rem', textTransform: 'uppercase' }}>SLOT</span>
+                    <div style={{ fontSize: '1.75rem', fontWeight: '900', color: '#10b981' }}>CONFIRMED</div>
                   </div>
-                  <p style={{ textAlign: 'center', fontWeight: '800', fontSize: '1.1rem', color: '#64748b' }}>A confirmation has been sent to {email}. <br/>Bring this ID to Aromas Cafe & Bistro.</p>
-                  <motion.button onClick={() => setPage('events')} whileHover={{ scale: 1.05, y: -5 }} whileTap={{ scale: 0.95 }} style={{ width: '100%', background: 'black', color: 'white', border: '4px solid black', padding: '1.5rem', borderRadius: '16px', fontWeight: '900', fontSize: '1.5rem', marginTop: '1rem', cursor: 'pointer', textTransform: 'uppercase' }}>Back to Site</motion.button>
-               </div>
+                </div>
+                <div style={{ background: '#000', color: '#34d399', padding: '2rem', borderRadius: '16px', border: '3px solid #34d399', textAlign: 'center' }}>
+                  <span style={{ fontWeight: '900', textTransform: 'uppercase', fontSize: '1rem', display: 'block', marginBottom: '0.5rem' }}>TICKET SERIAL</span>
+                  <div style={{ fontSize: '2.5rem', fontWeight: '900', letterSpacing: '0.2em' }}>{ticketId}</div>
+                </div>
+                <p style={{ textAlign: 'center', fontWeight: '800', fontSize: '1.1rem', color: '#64748b' }}>A confirmation has been sent to {email}. <br />Bring this ID to Aromas Cafe & Bistro.</p>
+                <motion.button onClick={() => setPage('events')} whileHover={{ scale: 1.05, y: -5 }} whileTap={{ scale: 0.95 }} style={{ width: '100%', background: 'black', color: 'white', border: '4px solid black', padding: '1.5rem', borderRadius: '16px', fontWeight: '900', fontSize: '1.5rem', marginTop: '1rem', cursor: 'pointer', textTransform: 'uppercase' }}>Back to Site</motion.button>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -1397,7 +1627,7 @@ const CustomCursor = () => {
   const cursorX = useMotionValue(-100);
   const cursorY = useMotionValue(-100);
   const [isHovering, setIsHovering] = useState(false);
-  
+
   const springConfig = { damping: 25, stiffness: 300, mass: 0.5 };
   const cursorXSpring = useSpring(cursorX, springConfig);
   const cursorYSpring = useSpring(cursorY, springConfig);
@@ -1410,12 +1640,12 @@ const CustomCursor = () => {
     const moveCursor = (e) => {
       cursorX.set(e.clientX);
       cursorY.set(e.clientY);
-      
+
       // Check if hovering over clickable elements
       const target = e.target;
       if (
-        target.closest('button') || 
-        target.closest('a') || 
+        target.closest('button') ||
+        target.closest('a') ||
         target.closest('.brand') ||
         window.getComputedStyle(target).cursor === 'pointer'
       ) {
@@ -1424,10 +1654,10 @@ const CustomCursor = () => {
         setIsHovering(false);
       }
     };
-    
+
     window.addEventListener('mousemove', moveCursor);
     document.body.style.cursor = 'none'; // hide default cursor globally
-    
+
     return () => {
       window.removeEventListener('mousemove', moveCursor);
       document.body.style.cursor = 'auto';
@@ -1447,7 +1677,7 @@ const CustomCursor = () => {
           height: isHovering ? '60px' : '40px',
           marginLeft: isHovering ? '-30px' : '-20px',
           marginTop: isHovering ? '-30px' : '-20px',
-          backgroundColor: isHovering ? 'rgba(0, 0, 0, 0.05)' : 'transparent', 
+          backgroundColor: isHovering ? 'rgba(0, 0, 0, 0.05)' : 'transparent',
           border: '2px solid black',
           borderRadius: '50%',
           pointerEvents: 'none',
@@ -1477,6 +1707,7 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [authMode, setAuthMode] = useState('login'); // 'login' or 'signup'
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showInboxModal, setShowInboxModal] = useState(false);
   const [isPageLoading, setIsPageLoading] = useState(false);
   const [verifiedMessage, setVerifiedMessage] = useState(false);
 
@@ -1494,16 +1725,16 @@ export default function App() {
     // 1. Check for verification token instantly (Supabase Email Confirmation Redirect)
     if (window.location.hash && window.location.hash.includes('access_token')) {
       setIsPageLoading(true);
-      
+
       // Give it a small delay for the session to settle and for the "Elite" B-Loader to show
       setTimeout(() => {
         setIsPageLoading(false);
         setVerifiedMessage(true);
         setCurrentPage('welcome');
-        
+
         // Clean the URL of the secret tokens for a professional look
         window.history.replaceState(null, null, window.location.pathname);
-        
+
         // Hide celebration toast after 5 seconds
         setTimeout(() => setVerifiedMessage(false), 5000);
       }, 2000);
@@ -1521,19 +1752,22 @@ export default function App() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
       setIsLoggedIn(!!session);
-      
+
       if (session && event === 'SIGNED_IN') {
         setShowAuthModal(false);
       }
     });
 
-    // 3. Listen for manual login modal triggers (from verification redirect)
+    // 3. Listen for manual triggers
     const handleOpenLogin = () => openAuth('login');
+    const handleOpenInbox = () => setShowInboxModal(true);
     window.addEventListener('openLoginModal', handleOpenLogin);
+    window.addEventListener('openInboxModal', handleOpenInbox);
 
     return () => {
       subscription.unsubscribe();
       window.removeEventListener('openLoginModal', handleOpenLogin);
+      window.removeEventListener('openInboxModal', handleOpenInbox);
     };
   }, []);
 
@@ -1543,41 +1777,52 @@ export default function App() {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch (e) {
+      console.error("Signout error", e);
+    }
+    
     setUser(null);
     setIsLoggedIn(false);
     handlePageChange('home');
-    // Clear any remaining auth items from localStorage just in case
+    
+    // Safely clear any remaining auth items from localStorage
+    const keysToRemove = [];
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
       if (key && key.includes('supabase.auth.token')) {
-        localStorage.removeItem(key);
+        keysToRemove.push(key);
       }
     }
+    keysToRemove.forEach(k => localStorage.removeItem(k));
   };
 
   return (
     <>
       <CustomCursor />
-      
+
       <AnimatePresence mode="wait">
         {isPageLoading && <PageLoader />}
       </AnimatePresence>
 
       {currentPage === 'home' && <LandingPage setPage={handlePageChange} isLoggedIn={isLoggedIn} onAuth={openAuth} onLogout={handleLogout} />}
-      {currentPage === 'gigs' && <GigsPage setPage={handlePageChange} isLoggedIn={isLoggedIn} onAuth={openAuth} onLogout={handleLogout} currentPage="gigs" />}
+      {currentPage === 'gigs' && <GigsPage setPage={handlePageChange} isLoggedIn={isLoggedIn} onAuth={openAuth} onLogout={handleLogout} currentPage="gigs" user={user} />}
       {currentPage === 'careers' && <CareersPage setPage={handlePageChange} isLoggedIn={isLoggedIn} onAuth={openAuth} onLogout={handleLogout} />}
       {currentPage === 'tri-score' && <TRIScorePage setPage={handlePageChange} isLoggedIn={isLoggedIn} onAuth={openAuth} onLogout={handleLogout} />}
+      {currentPage === 'student' && <StudentPage setPage={handlePageChange} isLoggedIn={isLoggedIn} onAuth={openAuth} onLogout={handleLogout} />}
       {currentPage === 'events' && <EventsPage setPage={handlePageChange} isLoggedIn={isLoggedIn} onAuth={openAuth} onLogout={handleLogout} />}
       {currentPage === 'pitch-fire-register' && <PitchFireRegistration setPage={handlePageChange} user={user} />}
       {currentPage === 'profile' && <UserProfile setPage={handlePageChange} user={user} />}
       {currentPage === 'welcome' && <WelcomePage setPage={handlePageChange} user={user} />}
-      
+
       <AuthModal isOpen={showAuthModal} initialMode={authMode} onClose={() => setShowAuthModal(false)} />
       
+      <InboxModal isOpen={showInboxModal} onClose={() => setShowInboxModal(false)} user={user} />
+
       <AnimatePresence>
         {verifiedMessage && (
-          <motion.div 
+          <motion.div
             initial={{ y: -100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -100, opacity: 0 }}
@@ -1607,7 +1852,7 @@ const PageLoader = () => {
   ];
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -1618,13 +1863,13 @@ const PageLoader = () => {
           <motion.div
             key={i}
             initial={{ scale: 0, opacity: 0 }}
-            animate={active ? { 
-              scale: 1, 
+            animate={active ? {
+              scale: 1,
               opacity: 1,
               backgroundColor: ['#ef4444', '#000', '#ef4444'],
-            } : { 
-              scale: 0.2, 
-              opacity: 0.05 
+            } : {
+              scale: 0.2,
+              opacity: 0.05
             }}
             transition={{
               duration: 0.3,
@@ -1636,8 +1881,8 @@ const PageLoader = () => {
           />
         ))}
       </div>
-      
-      <motion.span 
+
+      <motion.span
         animate={{ opacity: [0.3, 0.6, 0.3] }}
         transition={{ repeat: Infinity, duration: 1.5 }}
         className="text-[8px] font-black uppercase tracking-[0.8em] mt-6 text-black/40 italic"
@@ -1670,22 +1915,22 @@ const WelcomePage = ({ setPage, user }) => {
   return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 relative overflow-hidden">
       <div className="absolute inset-0 z-0 opacity-20">
-         <TracingBackground />
+        <TracingBackground />
       </div>
 
-      <motion.div 
+      <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         className="bg-white/10 backdrop-blur-3xl border border-white/20 rounded-[48px] p-10 md:p-16 text-center shadow-premium relative z-10 w-full max-w-xl flex flex-col items-center"
       >
-        <motion.div 
-          whileHover={{ scale: 1.02, rotate: -1 }} 
+        <motion.div
+          whileHover={{ scale: 1.02, rotate: -1 }}
           className="brand cursor-pointer flex items-center bg-brand-red px-6 py-3 rounded-2xl shadow-neo mb-10"
         >
           <span className="text-white text-3xl font-black tracking-tight font-['Space_Grotesk']">Bartr.in</span>
         </motion.div>
 
-        <motion.div 
+        <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1, rotate: [0, 10, -10, 0] }}
           transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.2 }}
@@ -1695,16 +1940,16 @@ const WelcomePage = ({ setPage, user }) => {
         </motion.div>
 
         <h1 className="text-4xl md:text-6xl font-black text-white tracking-tighter leading-none mb-4 uppercase">
-          Welcome, <br/><span className="text-emerald-400">{userName}!</span>
+          Welcome, <br /><span className="text-emerald-400">{userName}!</span>
         </h1>
-        
+
         <p className="text-xl md:text-2xl text-slate-300 font-bold mb-10 leading-tight">
-          You are officially <span className="text-white">verified.</span> <br/> Nagpur's biggest opportunity hub is waiting.
+          You are officially <span className="text-white">verified.</span> <br /> Nagpur's biggest opportunity hub is waiting.
         </p>
 
         {/* Countdown Progress */}
         <div className="relative w-full h-3 bg-white/5 rounded-full mb-4 overflow-hidden">
-          <motion.div 
+          <motion.div
             initial={{ width: '0%' }}
             animate={{ width: '100%' }}
             transition={{ duration: 5, ease: 'linear' }}
@@ -1757,9 +2002,9 @@ const UserProfile = ({ setPage, user }) => {
   const handleSave = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
+
     const skillsArray = profile.skills.split(',').map(s => s.trim()).filter(Boolean);
-    
+
     const { error } = await supabase.from('user_profiles').upsert({
       id: user.id,
       full_name: profile.full_name,
@@ -1770,7 +2015,12 @@ const UserProfile = ({ setPage, user }) => {
       updated_at: new Date()
     });
 
-    if (!error) setIsEditing(false);
+    if (!error) {
+      setIsEditing(false);
+    } else {
+      console.error("Profile Save Error:", error);
+      alert("Error saving profile: " + error.message);
+    }
     setLoading(false);
   };
 
@@ -1783,36 +2033,36 @@ const UserProfile = ({ setPage, user }) => {
 
   return (
     <div style={{ position: 'relative', minHeight: '100vh', background: '#f8fafc', paddingBottom: '4rem', overflow: 'hidden' }}>
-      
+
       {/* Background Floaters */}
       <FloatingIconsBackground />
 
       {/* BACKGROUND MOVING TEXT MARQUEE */}
       <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 0, overflow: 'hidden', opacity: 0.1 }}>
-          <motion.div 
-            animate={{ x: [-2000, 0] }} 
-            transition={{ repeat: Infinity, duration: 40, ease: 'linear' }} 
-            style={{ fontSize: '20rem', fontWeight: 900, color: '#3b82f6', whiteSpace: 'nowrap', lineHeight: 1, marginTop: '20vh' }}
-          >
-            YOUR BARTR PROFILE • YOUR BARTR PROFILE • YOUR BARTR PROFILE
-          </motion.div>
-          <motion.div 
-            animate={{ x: [0, -2000] }} 
-            transition={{ repeat: Infinity, duration: 35, ease: 'linear' }} 
-            style={{ fontSize: '20rem', fontWeight: 900, color: '#10b981', whiteSpace: 'nowrap', lineHeight: 1 }}
-          >
-            NAGPUR STARTUPS • NAGPUR STARTUPS • NAGPUR STARTUPS
-          </motion.div>
+        <motion.div
+          animate={{ x: [-2000, 0] }}
+          transition={{ repeat: Infinity, duration: 40, ease: 'linear' }}
+          style={{ fontSize: '20rem', fontWeight: 900, color: '#3b82f6', whiteSpace: 'nowrap', lineHeight: 1, marginTop: '20vh' }}
+        >
+          YOUR BARTR PROFILE • YOUR BARTR PROFILE • YOUR BARTR PROFILE
+        </motion.div>
+        <motion.div
+          animate={{ x: [0, -2000] }}
+          transition={{ repeat: Infinity, duration: 35, ease: 'linear' }}
+          style={{ fontSize: '20rem', fontWeight: 900, color: '#10b981', whiteSpace: 'nowrap', lineHeight: 1 }}
+        >
+          NAGPUR STARTUPS • NAGPUR STARTUPS • NAGPUR STARTUPS
+        </motion.div>
       </div>
 
       <Navbar scrolled={scrolled} setPage={setPage} isDark={false} isLoggedIn={!!user} onLogout={handleLogout} />
 
       <div className="container" style={{ maxWidth: '800px', margin: '0 auto', paddingTop: '150px', position: 'relative', zIndex: 10 }}>
-        
+
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
           <h1 style={{ fontSize: '3rem', fontWeight: '900', textTransform: 'uppercase', margin: 0 }}>My Profile</h1>
           {!isEditing && (
-            <motion.button 
+            <motion.button
               onClick={() => setIsEditing(true)}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -1824,9 +2074,9 @@ const UserProfile = ({ setPage, user }) => {
         </div>
 
         <div style={{ background: 'white', border: '6px solid black', borderRadius: '24px', padding: '3rem', boxShadow: '20px 20px 0px black', position: 'relative' }}>
-          
+
           <div style={{ position: 'absolute', top: '-40px', left: '3rem', width: '120px', height: '120px', borderRadius: '50%', background: '#3b82f6', border: '6px solid black', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '8px 8px 0px black' }}>
-             <User size={60} color="white" />
+            <User size={60} color="white" />
           </div>
 
           <div style={{ marginTop: '4rem' }}>
@@ -1834,25 +2084,25 @@ const UserProfile = ({ setPage, user }) => {
               <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                 <div>
                   <label style={{ display: 'block', fontWeight: '900', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Full Name</label>
-                  <input required value={profile.full_name} onChange={e => setProfile({...profile, full_name: e.target.value})} style={{ width: '100%', padding: '1rem', border: '3px solid black', borderRadius: '12px', fontWeight: 'bold', fontSize: '1.1rem' }} />
+                  <input required value={profile.full_name} onChange={e => setProfile({ ...profile, full_name: e.target.value })} style={{ width: '100%', padding: '1rem', border: '3px solid black', borderRadius: '12px', fontWeight: 'bold', fontSize: '1.1rem' }} />
                 </div>
                 <div>
                   <label style={{ display: 'block', fontWeight: '900', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Phone Number</label>
-                  <input value={profile.phone} onChange={e => setProfile({...profile, phone: e.target.value})} style={{ width: '100%', padding: '1rem', border: '3px solid black', borderRadius: '12px', fontWeight: 'bold', fontSize: '1.1rem' }} />
+                  <input value={profile.phone} onChange={e => setProfile({ ...profile, phone: e.target.value })} style={{ width: '100%', padding: '1rem', border: '3px solid black', borderRadius: '12px', fontWeight: 'bold', fontSize: '1.1rem' }} />
                 </div>
                 <div>
                   <label style={{ display: 'block', fontWeight: '900', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Location (e.g., Wardha Road, Nagpur)</label>
-                  <input value={profile.location} onChange={e => setProfile({...profile, location: e.target.value})} style={{ width: '100%', padding: '1rem', border: '3px solid black', borderRadius: '12px', fontWeight: 'bold', fontSize: '1.1rem' }} />
+                  <input value={profile.location} onChange={e => setProfile({ ...profile, location: e.target.value })} style={{ width: '100%', padding: '1rem', border: '3px solid black', borderRadius: '12px', fontWeight: 'bold', fontSize: '1.1rem' }} />
                 </div>
                 <div>
                   <label style={{ display: 'block', fontWeight: '900', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Bio / What do you do?</label>
-                  <textarea rows="4" value={profile.bio} onChange={e => setProfile({...profile, bio: e.target.value})} style={{ width: '100%', padding: '1rem', border: '3px solid black', borderRadius: '12px', fontWeight: 'bold', fontSize: '1.1rem', resize: 'vertical' }} />
+                  <textarea rows="4" value={profile.bio} onChange={e => setProfile({ ...profile, bio: e.target.value })} style={{ width: '100%', padding: '1rem', border: '3px solid black', borderRadius: '12px', fontWeight: 'bold', fontSize: '1.1rem', resize: 'vertical' }} />
                 </div>
                 <div>
                   <label style={{ display: 'block', fontWeight: '900', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Skills (comma separated)</label>
-                  <input placeholder="React, Graphic Design, Sales..." value={profile.skills} onChange={e => setProfile({...profile, skills: e.target.value})} style={{ width: '100%', padding: '1rem', border: '3px solid black', borderRadius: '12px', fontWeight: 'bold', fontSize: '1.1rem' }} />
+                  <input placeholder="React, Graphic Design, Sales..." value={profile.skills} onChange={e => setProfile({ ...profile, skills: e.target.value })} style={{ width: '100%', padding: '1rem', border: '3px solid black', borderRadius: '12px', fontWeight: 'bold', fontSize: '1.1rem' }} />
                 </div>
-                
+
                 <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
                   <motion.button type="button" onClick={() => setIsEditing(false)} whileHover={{ scale: 1.05 }} style={{ flex: 1, background: '#f1f5f9', border: '3px solid black', padding: '1rem', borderRadius: '12px', fontWeight: '900', cursor: 'pointer' }}>CANCEL</motion.button>
                   <motion.button type="submit" whileHover={{ scale: 1.05 }} style={{ flex: 2, background: '#34d399', color: 'black', border: '3px solid black', padding: '1rem', borderRadius: '12px', fontWeight: '900', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
@@ -1881,8 +2131,8 @@ const UserProfile = ({ setPage, user }) => {
                 </div>
 
                 <div style={{ background: '#fef3c7', padding: '2rem', borderRadius: '16px', border: '3px solid black' }}>
-                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#b45309', fontWeight: '900', marginBottom: '1rem', textTransform: 'uppercase' }}><FileText size={18} /> About Me</div>
-                   <p style={{ fontSize: '1.25rem', fontWeight: '600', lineHeight: 1.6, margin: 0 }}>{profile.bio || 'This user prefers to keep an air of mystery.'}</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#b45309', fontWeight: '900', marginBottom: '1rem', textTransform: 'uppercase' }}><FileText size={18} /> About Me</div>
+                  <p style={{ fontSize: '1.25rem', fontWeight: '600', lineHeight: 1.6, margin: 0 }}>{profile.bio || 'This user prefers to keep an air of mystery.'}</p>
                 </div>
 
                 {profile.skills && (
@@ -1911,39 +2161,43 @@ const AuthModal = ({ isOpen, initialMode, onClose }) => {
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
+  const [collegeName, setCollegeName] = useState('');
+  const [role, setRole] = useState('freelancer');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false); // New state for signup success
-  
+
   useEffect(() => {
     setIsLogin(initialMode === 'login');
     setError(null);
     setShowSuccess(false);
   }, [initialMode, isOpen]);
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
-    
+
     try {
       if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       } else {
-        const { error } = await supabase.auth.signUp({ 
-          email, 
+        const { error } = await supabase.auth.signUp({
+          email,
           password,
           options: {
             emailRedirectTo: window.location.origin,
-            data: { 
+            data: {
               full_name: fullName,
-              phone: phone
+              phone: phone,
+              role: role,
+              ...(role === 'student' && { college: collegeName })
             }
           }
         });
         if (error) throw error;
-        
+
         // Send custom welcome email via backend
         fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/welcome-email`, {
           method: 'POST',
@@ -1974,81 +2228,101 @@ const AuthModal = ({ isOpen, initialMode, onClose }) => {
 
   return (
     <AnimatePresence>
-      <motion.div 
-        initial={{ opacity: 0 }} 
-        animate={{ opacity: 1 }} 
-        exit={{ opacity: 0 }} 
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
         className="fixed inset-0 z-[10000] flex items-center justify-center p-4 backdrop-blur-xl bg-black/60"
         onClick={onClose}
       >
-        <motion.div 
-          initial={{ scale: 0.9, y: 30, rotate: -1 }} 
-          animate={{ scale: 1, y: 0, rotate: 0 }} 
+        <motion.div
+          initial={{ scale: 0.9, y: 30, rotate: -1 }}
+          animate={{ scale: 1, y: 0, rotate: 0 }}
           exit={{ scale: 0.9, y: 30 }}
-          className="bg-white border-[8px] border-black rounded-[40px] w-full max-w-[480px] relative overflow-hidden shadow-[16px_16px_0px_rgba(0,0,0,1)]"
+          className="bg-white border-[8px] border-black rounded-[40px] w-full max-w-[650px] relative overflow-hidden shadow-[16px_16px_0px_rgba(0,0,0,1)]"
           onClick={e => e.stopPropagation()}
         >
           {showSuccess ? (
             <div className="p-12 text-center">
-               <motion.div 
+              <motion.div
                 animate={{ scale: [1, 1.2, 1], rotate: [0, 10, -10, 0] }}
                 transition={{ repeat: Infinity, duration: 2 }}
                 className="text-8xl mb-8"
-               >
-                 📩
-               </motion.div>
-               <h2 className="text-4xl font-black uppercase tracking-tighter mb-4 italic">Check Yo Mail!</h2>
-               <p className="font-bold text-slate-500 text-lg mb-10 leading-tight">We sent a magic link to <span className="text-black underline">{email}</span>. Activate it to start the hustle.</p>
-               <motion.button 
-                 onClick={() => { setShowSuccess(false); setIsLogin(true); }}
-                 whileHover={{ scale: 1.05, y: -5 }} 
-                 whileTap={{ scale: 0.95 }}
-                 className="w-full bg-brand-red text-white border-4 border-black py-5 rounded-2xl font-black text-2xl shadow-neo uppercase italic tracking-widest"
-               >
-                 Back to Login
-               </motion.button>
+              >
+                📩
+              </motion.div>
+              <h2 className="text-4xl font-black uppercase tracking-tighter mb-4 italic">Check Yo Mail!</h2>
+              <p className="font-bold text-slate-500 text-lg mb-10 leading-tight">We sent a magic link to <span className="text-black underline">{email}</span>. Activate it to start the hustle.</p>
+              <motion.button
+                onClick={() => { setShowSuccess(false); setIsLogin(true); }}
+                whileHover={{ scale: 1.05, y: -5 }}
+                whileTap={{ scale: 0.95 }}
+                className="w-full bg-brand-red text-white border-4 border-black py-5 rounded-2xl font-black text-2xl shadow-neo uppercase italic tracking-widest"
+              >
+                Back to Login
+              </motion.button>
             </div>
           ) : (
             <>
               {/* Vibrant Header */}
               <div className={`p-8 border-b-[6px] border-black relative transition-colors duration-500 ${isLogin ? 'bg-indigo-500' : 'bg-rose-500'}`}>
-                 <motion.div 
-                    whileHover={{ scale: 1.1, rotate: 2 }} 
-                    className="bg-white border-4 border-black px-4 py-1.5 rounded-xl shadow-[6px_6px_0px_black] w-fit mb-6"
-                  >
-                    <span className="text-black text-xl font-black tracking-tight font-['Space_Grotesk'] italic">Bartr.in</span>
-                 </motion.div>
-                 
-                 <h2 className="text-5xl font-black text-white uppercase italic tracking-tighter leading-[0.8] mb-2">
-                   {isLogin ? 'Welcome Back, Legend' : 'Join the Hustle'}
-                 </h2>
-                 <p className="text-white font-black opacity-90 uppercase tracking-widest text-xs">
-                   {isLogin ? 'Nagpur is waiting for you' : 'Start building your future today'}
-                 </p>
-                 
-                 <motion.button 
-                    whileHover={{ rotate: 90, scale: 1.1 }} 
-                    onClick={onClose} 
-                    className="absolute top-6 right-6 bg-black text-white p-2 rounded-xl border-4 border-white shadow-lg"
-                  >
-                    <X size={20} strokeWidth={3} />
-                 </motion.button>
+                <motion.div
+                  whileHover={{ scale: 1.1, rotate: 2 }}
+                  className="bg-white border-4 border-black px-4 py-1.5 rounded-xl shadow-[6px_6px_0px_black] w-fit mb-6"
+                >
+                  <span className="text-black text-xl font-black tracking-tight font-['Space_Grotesk'] italic">Bartr.in</span>
+                </motion.div>
+
+                <h2 className="text-5xl font-black text-white uppercase italic tracking-tighter leading-[0.8] mb-2">
+                  {isLogin ? 'Welcome Back, Legend' : 'Join the Hustle'}
+                </h2>
+                <p className="text-white font-black opacity-90 uppercase tracking-widest text-xs">
+                  {isLogin ? 'Nagpur is waiting for you' : 'Start building your future today'}
+                </p>
+
+                <motion.button
+                  whileHover={{ rotate: 90, scale: 1.1 }}
+                  onClick={onClose}
+                  className="absolute top-6 right-6 bg-black text-white p-2 rounded-xl border-4 border-white shadow-lg"
+                >
+                  <X size={20} strokeWidth={3} />
+                </motion.button>
               </div>
 
               <div className="p-8 md:p-10 space-y-6">
-                 {error && (
-                   <div className="bg-rose-100 border-4 border-rose-500 p-4 rounded-xl flex items-center gap-3 animate-shake">
-                     <AlertCircle className="text-rose-600" />
-                     <p className="text-rose-900 font-black text-sm uppercase italic">{error}</p>
-                   </div>
-                 )}
+                {error && (
+                  <div className="bg-rose-100 border-4 border-rose-500 p-4 rounded-xl flex items-center gap-3 animate-shake">
+                    <AlertCircle className="text-rose-600" />
+                    <p className="text-rose-900 font-black text-sm uppercase italic">{error}</p>
+                  </div>
+                )}
 
-                 <form onSubmit={handleSubmit} className="space-y-5">
+                <form onSubmit={handleSubmit} className="space-y-5">
+                  
+                  {/* Multi-Login Role Toggle */}
+                  <div className="flex gap-2 p-1.5 bg-slate-100 rounded-2xl mb-2 border-2 border-slate-200">
+                    <button
+                      type="button"
+                      onClick={() => setRole('freelancer')}
+                      className={`flex-1 py-3 rounded-xl font-black text-sm uppercase transition-all ${role === 'freelancer' ? 'bg-white text-black shadow-sm border-2 border-black' : 'text-slate-400 hover:text-slate-600 border-2 border-transparent'}`}
+                    >
+                      Freelancer
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRole('student')}
+                      className={`flex-1 py-3 rounded-xl font-black text-sm uppercase transition-all ${role === 'student' ? 'bg-indigo-500 text-white shadow-sm border-2 border-black' : 'text-slate-400 hover:text-slate-600 border-2 border-transparent'}`}
+                    >
+                      Student
+                    </button>
+                  </div>
+
+                  <div className={`grid gap-4 ${!isLogin ? 'md:grid-cols-2' : 'grid-cols-1'}`}>
                     {!isLogin && (
                       <div className="space-y-2">
                         <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">Full Name</label>
-                        <input 
-                          type="text" 
+                        <input
+                          type="text"
                           placeholder="Your Boss Name"
                           className="w-full bg-slate-50 border-4 border-black p-4 rounded-2xl font-bold text-lg focus:bg-white focus:shadow-[4px_4px_0px_black] transition-all outline-none"
                           value={fullName}
@@ -2060,8 +2334,8 @@ const AuthModal = ({ isOpen, initialMode, onClose }) => {
 
                     <div className="space-y-2">
                       <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">Email Address</label>
-                      <input 
-                        type="email" 
+                      <input
+                        type="email"
                         placeholder="you@hustle.com"
                         className="w-full bg-slate-50 border-4 border-black p-4 rounded-2xl font-bold text-lg focus:bg-white focus:shadow-[4px_4px_0px_black] transition-all outline-none"
                         value={email}
@@ -2072,8 +2346,8 @@ const AuthModal = ({ isOpen, initialMode, onClose }) => {
 
                     <div className="space-y-2">
                       <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">Password</label>
-                      <input 
-                        type="password" 
+                      <input
+                        type="password"
                         placeholder="••••••••"
                         className="w-full bg-slate-50 border-4 border-black p-4 rounded-2xl font-bold text-lg focus:bg-white focus:shadow-[4px_4px_0px_black] transition-all outline-none"
                         value={password}
@@ -2082,41 +2356,247 @@ const AuthModal = ({ isOpen, initialMode, onClose }) => {
                       />
                     </div>
 
-                    <motion.button 
-                      type="submit"
-                      disabled={loading}
-                      whileHover={{ scale: 1.02, y: -4 }}
-                      whileTap={{ scale: 0.98, y: 0 }}
-                      className={`w-full py-5 rounded-2xl font-black text-2xl border-4 border-black shadow-[8px_8px_0px_black] uppercase italic tracking-widest transition-all ${loading ? 'opacity-50 cursor-not-allowed' : 'bg-black text-white hover:bg-slate-900'}`}
-                    >
-                      {loading ? 'Hustling...' : isLogin ? 'Let\'s Gooo' : 'Start Now'}
-                    </motion.button>
-                 </form>
+                    {!isLogin && role === 'student' && (
+                      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2">
+                        <label className="text-xs font-black uppercase tracking-widest text-indigo-400 ml-2">School / College</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. VNIT, Raisoni"
+                          className="w-full bg-indigo-50 border-4 border-black p-4 rounded-2xl font-bold text-lg focus:bg-white focus:shadow-[4px_4px_0px_black] focus:border-indigo-500 transition-all outline-none text-indigo-900"
+                          value={collegeName}
+                          onChange={e => setCollegeName(e.target.value)}
+                          required
+                        />
+                      </motion.div>
+                    )}
+                  </div>
 
-                 <div className="relative flex items-center py-4">
-                    <div className="flex-grow border-t-4 border-black/10"></div>
-                    <span className="flex-shrink mx-4 text-slate-400 font-black text-xs uppercase tracking-widest">OR</span>
-                    <div className="flex-grow border-t-4 border-black/10"></div>
-                 </div>
+                  <motion.button
+                    type="submit"
+                    disabled={loading}
+                    whileHover={{ scale: 1.02, y: -4 }}
+                    whileTap={{ scale: 0.98, y: 0 }}
+                    className={`w-full py-5 rounded-2xl font-black text-2xl border-4 border-black shadow-[8px_8px_0px_black] uppercase italic tracking-widest transition-all ${loading ? 'opacity-50 cursor-not-allowed' : 'bg-black text-white hover:bg-slate-900'}`}
+                  >
+                    {loading ? 'Hustling...' : isLogin ? 'Let\'s Gooo' : 'Start Now'}
+                  </motion.button>
+                </form>
 
-                 <motion.button 
-                   onClick={handleGoogleLogin}
-                   whileHover={{ scale: 1.02, y: -4 }}
-                   whileTap={{ scale: 0.98, y: 0 }}
-                   className="w-full bg-white border-4 border-black py-4 rounded-2xl flex items-center justify-center gap-4 shadow-[8px_8px_0px_rgba(0,0,0,0.1)] hover:shadow-[8px_8px_0px_black] transition-all"
-                 >
-                   <img src="https://www.gstatic.com/lamda/images/google_favicon_v2.svg" className="w-6 h-6" alt="G" />
-                   <span className="font-black text-xl uppercase italic">Continue with Google</span>
-                 </motion.button>
+                <div className="relative flex items-center py-4">
+                  <div className="flex-grow border-t-4 border-black/10"></div>
+                  <span className="flex-shrink mx-4 text-slate-400 font-black text-xs uppercase tracking-widest">OR</span>
+                  <div className="flex-grow border-t-4 border-black/10"></div>
+                </div>
 
-                 <div className="text-center pt-4">
-                    <button 
-                      onClick={() => setIsLogin(!isLogin)} 
-                      className="text-slate-500 font-black uppercase tracking-widest text-xs hover:text-black hover:underline underline-offset-4"
-                    >
-                      {isLogin ? 'New to the hub? Create account' : 'Already a legend? Login here'}
-                    </button>
-                 </div>
+                <motion.button
+                  onClick={handleGoogleLogin}
+                  whileHover={{ scale: 1.02, y: -4 }}
+                  whileTap={{ scale: 0.98, y: 0 }}
+                  className="w-full bg-white border-4 border-black py-4 rounded-2xl flex items-center justify-center gap-4 shadow-[8px_8px_0px_rgba(0,0,0,0.1)] hover:shadow-[8px_8px_0px_black] transition-all"
+                >
+                  <img src="https://www.gstatic.com/lamda/images/google_favicon_v2.svg" className="w-6 h-6" alt="G" />
+                  <span className="font-black text-xl uppercase italic">Continue with Google</span>
+                </motion.button>
+
+                <div className="text-center pt-4">
+                  <button
+                    onClick={() => setIsLogin(!isLogin)}
+                    className="text-slate-500 font-black uppercase tracking-widest text-xs hover:text-black hover:underline underline-offset-4"
+                  >
+                    {isLogin ? 'New to the hub? Create account' : 'Already a legend? Login here'}
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+};
+
+// --- CHAT BOX ---
+const ChatBox = ({ application, user, gigTitle, onBack }) => {
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState('');
+  const messagesEndRef = useRef(null);
+
+  const applicantId = application.applicant_id;
+  const gigId = application.gig_id;
+  const isPoster = application.gigs.client_id === user.id;
+  
+  // Use optional chaining carefully since some joins might return slightly differently depending on the query
+  const chatPartnerName = isPoster 
+    ? (application.applicant?.full_name || 'Applicant') 
+    : (application.gigs.poster?.full_name || 'Gig Poster');
+    
+  const receiverId = isPoster ? applicantId : application.gigs.client_id;
+
+  useEffect(() => {
+    fetchMessages();
+    const channel = supabase
+      .channel(`chat_${application.id}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `gig_id=eq.${gigId}` }, payload => {
+        const msg = payload.new;
+        if ((msg.sender_id === applicantId || msg.receiver_id === applicantId)) {
+          setMessages(prev => [...prev, msg]);
+        }
+      })
+      .subscribe();
+    return () => supabase.removeChannel(channel);
+  }, [application]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const fetchMessages = async () => {
+    const { data, error } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('gig_id', gigId)
+      .or(`sender_id.eq.${applicantId},receiver_id.eq.${applicantId}`)
+      .order('created_at', { ascending: true });
+    if (data) setMessages(data);
+  };
+
+  const handleSend = async (e) => {
+    e.preventDefault();
+    if (!newMessage.trim()) return;
+    const msg = {
+      gig_id: gigId,
+      sender_id: user.id,
+      receiver_id: receiverId,
+      content: newMessage.trim()
+    };
+    setNewMessage('');
+    await supabase.from('messages').insert([msg]);
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'white' }}>
+      <div style={{ padding: '1rem', borderBottom: '2px solid #eee', display: 'flex', alignItems: 'center', gap: '1rem', background: '#000', color: 'white' }}>
+        <button onClick={onBack} style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}><ChevronLeft /></button>
+        <div>
+          <div style={{ fontWeight: '900', fontSize: '1.2rem' }}>{chatPartnerName}</div>
+          <div style={{ fontSize: '0.8rem', color: '#aaa', fontWeight: '800' }}>RE: {gigTitle}</div>
+        </div>
+      </div>
+      
+      <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', background: '#f8fafc' }}>
+        {messages.map(m => (
+          <div key={m.id} style={{ alignSelf: m.sender_id === user.id ? 'flex-end' : 'flex-start', maxWidth: '80%' }}>
+            <div style={{ background: m.sender_id === user.id ? '#10b981' : '#fff', color: m.sender_id === user.id ? '#fff' : '#000', border: m.sender_id === user.id ? 'none' : '2px solid #eee', padding: '0.8rem 1.2rem', borderRadius: '20px', borderBottomRightRadius: m.sender_id === user.id ? '4px' : '20px', borderBottomLeftRadius: m.sender_id === user.id ? '20px' : '4px', fontWeight: '700' }}>
+              {m.content}
+            </div>
+            <div style={{ fontSize: '0.6rem', color: '#999', marginTop: '0.3rem', textAlign: m.sender_id === user.id ? 'right' : 'left', fontWeight: '800' }}>
+              {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </div>
+          </div>
+        ))}
+        <div ref={messagesEndRef} />
+      </div>
+
+      <form onSubmit={handleSend} style={{ padding: '1rem', background: 'white', borderTop: '2px solid #eee', display: 'flex', gap: '0.5rem' }}>
+        <input type="text" value={newMessage} onChange={e=>setNewMessage(e.target.value)} placeholder="Type a message..." style={{ flex: 1, padding: '1rem', borderRadius: '100px', border: '2px solid #eee', outline: 'none', fontWeight: '700' }} />
+        <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} type="submit" style={{ background: '#000', color: 'white', border: 'none', width: '50px', height: '50px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+          <Send size={20} />
+        </motion.button>
+      </form>
+    </div>
+  );
+};
+
+// --- INBOX MODAL ---
+const InboxModal = ({ isOpen, onClose, user }) => {
+  const [receivedApps, setReceivedApps] = useState([]);
+  const [sentApps, setSentApps] = useState([]);
+  const [activeTab, setActiveTab] = useState('received');
+  const [activeChat, setActiveChat] = useState(null);
+
+  useEffect(() => {
+    if (isOpen && user) {
+      fetchInbox();
+      setActiveChat(null);
+    }
+  }, [isOpen, user]);
+
+  const fetchInbox = async () => {
+    if (!user) return;
+    // Fetch apps received on user's gigs
+    const { data: myGigs } = await supabase.from('gigs').select('id, title').eq('client_id', user.id);
+    if (myGigs && myGigs.length > 0) {
+      const gigIds = myGigs.map(g => g.id);
+      const { data: received } = await supabase
+        .from('gig_applications')
+        .select('*, gigs(id, title, client_id), applicant:user_profiles!gig_applications_applicant_id_fkey(full_name, role)')
+        .in('gig_id', gigIds)
+        .order('created_at', { ascending: false });
+      if (received) setReceivedApps(received);
+    }
+
+    // Fetch apps user sent
+    const { data: sent } = await supabase
+      .from('gig_applications')
+      .select('*, gigs(id, title, client_id, poster:user_profiles!gigs_client_id_fkey(full_name, role))')
+      .eq('applicant_id', user.id)
+      .order('created_at', { ascending: false });
+    if (sent) setSentApps(sent);
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <AnimatePresence>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[10000] flex items-center justify-center p-4 backdrop-blur-xl bg-black/60" onClick={onClose}>
+        <motion.div initial={{ scale: 0.9, y: 30 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 30 }} className="bg-white border-[8px] border-black rounded-[40px] w-full max-w-[800px] h-[80vh] overflow-hidden shadow-[16px_16px_0px_rgba(0,0,0,1)] relative flex flex-col" onClick={e => e.stopPropagation()}>
+          
+          {activeChat ? (
+            <ChatBox application={activeChat} user={user} gigTitle={activeChat.gigs.title} onBack={() => setActiveChat(null)} />
+          ) : (
+            <>
+              <div style={{ padding: '2rem', borderBottom: '4px solid black', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h2 style={{ fontSize: '2.5rem', fontWeight: '900', margin: 0, textTransform: 'uppercase', fontStyle: 'italic' }}>Inbox</h2>
+                <button onClick={onClose} style={{ background: 'black', color: 'white', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><X size={20} /></button>
+              </div>
+
+              <div style={{ display: 'flex', borderBottom: '2px solid #eee' }}>
+                <button onClick={() => setActiveTab('received')} style={{ flex: 1, padding: '1rem', background: activeTab === 'received' ? '#f8fafc' : 'white', border: 'none', borderBottom: activeTab === 'received' ? '4px solid black' : '4px solid transparent', fontWeight: '900', cursor: 'pointer', transition: 'all 0.2s', textTransform: 'uppercase' }}>Applicants</button>
+                <button onClick={() => setActiveTab('sent')} style={{ flex: 1, padding: '1rem', background: activeTab === 'sent' ? '#f8fafc' : 'white', border: 'none', borderBottom: activeTab === 'sent' ? '4px solid black' : '4px solid transparent', fontWeight: '900', cursor: 'pointer', transition: 'all 0.2s', textTransform: 'uppercase' }}>My Applications</button>
+              </div>
+
+              <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem', background: '#f8fafc' }}>
+                {activeTab === 'received' && (
+                  receivedApps.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '3rem', color: '#aaa', fontWeight: '800' }}>No one has applied to your gigs yet!</div>
+                  ) : (
+                    receivedApps.map(app => (
+                      <div key={app.id} onClick={() => setActiveChat(app)} style={{ background: 'white', padding: '1.5rem', borderRadius: '16px', border: '2px solid #eee', marginBottom: '1rem', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.border = '2px solid black'} onMouseLeave={e => e.currentTarget.style.border = '2px solid #eee'}>
+                        <div>
+                          <div style={{ fontWeight: '900', fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><User size={18}/> {app.applicant?.full_name || 'Anonymous'}</div>
+                          <div style={{ color: '#666', fontWeight: '700', fontSize: '0.9rem', marginTop: '0.3rem' }}>Applied for: {app.gigs?.title}</div>
+                        </div>
+                        <div style={{ background: '#000', color: '#fff', padding: '0.5rem 1rem', borderRadius: '100px', fontWeight: '900', fontSize: '0.8rem' }}>CHAT</div>
+                      </div>
+                    ))
+                  )
+                )}
+
+                {activeTab === 'sent' && (
+                  sentApps.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '3rem', color: '#aaa', fontWeight: '800' }}>You haven't applied to any gigs yet!</div>
+                  ) : (
+                    sentApps.map(app => (
+                      <div key={app.id} onClick={() => setActiveChat(app)} style={{ background: 'white', padding: '1.5rem', borderRadius: '16px', border: '2px solid #eee', marginBottom: '1rem', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.border = '2px solid black'} onMouseLeave={e => e.currentTarget.style.border = '2px solid #eee'}>
+                        <div>
+                          <div style={{ fontWeight: '900', fontSize: '1.2rem' }}>{app.gigs?.title}</div>
+                          <div style={{ color: '#666', fontWeight: '700', fontSize: '0.9rem', marginTop: '0.3rem' }}>Posted by: {app.gigs?.poster?.full_name || 'Unknown'}</div>
+                        </div>
+                        <div style={{ background: '#10b981', color: '#fff', padding: '0.5rem 1rem', borderRadius: '100px', fontWeight: '900', fontSize: '0.8rem' }}>OPEN CHAT</div>
+                      </div>
+                    ))
+                  )
+                )}
               </div>
             </>
           )}
@@ -2132,13 +2612,13 @@ const Footer = ({ setPage }) => {
     <footer className="bg-slate-950 text-white pt-24 pb-12 overflow-hidden relative">
       {/* Background Accent */}
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-brand-red to-transparent opacity-50" />
-      
+
       <div className="container mx-auto px-6 md:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-20 mb-20">
           {/* Brand Column */}
           <div className="space-y-8">
-            <motion.div 
-              whileHover={{ scale: 1.02, rotate: -1 }} 
+            <motion.div
+              whileHover={{ scale: 1.02, rotate: -1 }}
               className="brand cursor-pointer flex items-center bg-brand-red px-5 py-2 rounded-xl shadow-neo w-fit"
               onClick={() => setPage('home')}
             >
@@ -2163,7 +2643,7 @@ const Footer = ({ setPage }) => {
                 { name: 'Careers', page: 'careers' },
                 { name: 'TRI Score', page: 'tri-score' }
               ].map((link) => (
-                <motion.li 
+                <motion.li
                   key={link.name}
                   whileHover={{ x: 8, color: '#ef4444' }}
                   className="text-slate-400 font-bold cursor-pointer transition-colors"
@@ -2185,7 +2665,7 @@ const Footer = ({ setPage }) => {
                 'Safety Center',
                 'Business Solutions'
               ].map((link) => (
-                <motion.li 
+                <motion.li
                   key={link}
                   whileHover={{ x: 8, color: '#ef4444' }}
                   className="text-slate-400 font-bold cursor-pointer transition-colors"
@@ -2209,10 +2689,10 @@ const Footer = ({ setPage }) => {
                 <span className="font-bold">Nagpur, Maharashtra</span>
               </div>
             </div>
-            
+
             <div className="flex gap-4 pt-4">
               {[Users, ShieldCheck, Globe].map((Icon, i) => (
-                <motion.div 
+                <motion.div
                   key={i}
                   whileHover={{ y: -5, backgroundColor: '#ef4444', borderColor: '#000' }}
                   className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center cursor-pointer transition-all shadow-crystal"
@@ -2278,9 +2758,9 @@ function LandingPage({ setPage, isLoggedIn, onAuth, onLogout }) {
       <Navbar scrolled={scrolled} setPage={setPage} isDark={false} isLoggedIn={isLoggedIn} onAuth={onAuth} onLogout={onLogout} currentPage="home" />
       <section className="hero relative overflow-hidden w-full min-h-screen flex items-center pt-[180px] md:pt-[120px] pb-20">
         <div className="absolute inset-0 z-0">
-           <TracingBackground />
+          <TracingBackground />
         </div>
-        
+
         {/* Bottom Fade Gradient */}
         <div className="absolute bottom-0 left-0 w-full h-40 bg-gradient-to-t from-white to-transparent z-[1] pointer-events-none" />
 
@@ -2296,19 +2776,19 @@ function LandingPage({ setPage, isLoggedIn, onAuth, onLogout }) {
               <MapPin size={18} className="animate-bounce" />
               Showing opportunities from Nagpur
             </motion.div>
-            
+
             <motion.h1 variants={fadeInUp} className="text-[clamp(3rem,12vw,9rem)] font-black leading-[0.8] tracking-tighter mb-2 text-slate-900 filter drop-shadow-sm">
-               Post what you <span className="text-brand-red">need.</span>
+              Post what you <span className="text-brand-red">need.</span>
             </motion.h1>
-            
+
             <motion.h1 variants={fadeInUp} className="text-[clamp(2rem,8vw,6rem)] font-black leading-[0.8] tracking-tight text-slate-800 mb-8 opacity-90">
               Find work near you.
             </motion.h1>
-            
+
             <motion.p variants={fadeInUp} className="text-lg md:text-3xl text-slate-600 font-medium leading-relaxed max-w-[750px] mb-10 opacity-80 px-1 md:px-0">
               Bartr is Nagpur's hyperlocal platform for workers, businesses, and individuals to exchange services, gigs, and opportunities — instantly and transparently.
             </motion.p>
-            
+
             <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-5">
               <motion.button whileHover={{ scale: 1.05, y: -4 }} whileTap={{ scale: 0.95 }} className="bg-brand-red text-white border-2 border-slate-900 px-10 py-5 rounded-2xl font-black text-xl shadow-neo uppercase tracking-wide transition-all">
                 Get Started
@@ -2326,113 +2806,113 @@ function LandingPage({ setPage, isLoggedIn, onAuth, onLogout }) {
 
       <div className="marquee-container" style={{ position: 'relative', zIndex: 11 }}>
         <div className="marquee-content" style={{ background: 'linear-gradient(90deg, var(--brand-red), #ff8a00)' }}>
-           <span>• HYPERLOCAL SERVICES</span>
-           <span>• VERIFIED PROFILES</span>
-           <span>• INSTANT CONNECTIONS</span>
-           <span>• AI MODERATION</span>
-           <span>• NAGPUR FIRST</span>
-           <span>• CITY WIDE EXPOSURE</span>
-           <span>• SECURE PLATFORM</span>
-           <span>• NO SPAM</span>
-           {/* Duplicate for seamless scrolling */}
-           <span>• HYPERLOCAL SERVICES</span>
-           <span>• VERIFIED PROFILES</span>
-           <span>• INSTANT CONNECTIONS</span>
-           <span>• AI MODERATION</span>
-           <span>• NAGPUR FIRST</span>
-           <span>• CITY WIDE EXPOSURE</span>
-           <span>• SECURE PLATFORM</span>
-           <span>• NO SPAM</span>
+          <span>• HYPERLOCAL SERVICES</span>
+          <span>• VERIFIED PROFILES</span>
+          <span>• INSTANT CONNECTIONS</span>
+          <span>• AI MODERATION</span>
+          <span>• NAGPUR FIRST</span>
+          <span>• CITY WIDE EXPOSURE</span>
+          <span>• SECURE PLATFORM</span>
+          <span>• NO SPAM</span>
+          {/* Duplicate for seamless scrolling */}
+          <span>• HYPERLOCAL SERVICES</span>
+          <span>• VERIFIED PROFILES</span>
+          <span>• INSTANT CONNECTIONS</span>
+          <span>• AI MODERATION</span>
+          <span>• NAGPUR FIRST</span>
+          <span>• CITY WIDE EXPOSURE</span>
+          <span>• SECURE PLATFORM</span>
+          <span>• NO SPAM</span>
         </div>
       </div>
 
       <section id="how-it-works" ref={roadmapRef} className="section section-bg-alt relative py-24 md:py-32 overflow-hidden">
         <FloatingIconsBackground />
         <div className="container mx-auto px-6 md:px-8 relative z-10">
-          <motion.div 
-             initial={{ opacity: 0, scale: 0.8 }} 
-             whileInView={{ opacity: 1, scale: 1 }} 
-             viewport={{ once: true }} 
-             transition={{ duration: 0.5 }}
-             className="section-header"
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="section-header"
           >
             <span className="section-tag">Smooth Process</span>
-            <h2 className="section-title" style={{ 
-                background: 'linear-gradient(135deg, var(--text-primary) 0%, var(--brand-red) 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent'
+            <h2 className="section-title" style={{
+              background: 'linear-gradient(135deg, var(--text-primary) 0%, var(--brand-red) 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent'
             }}>The Bartr Journey</h2>
             <p className="section-subtitle">How we connect your needs with local talent instantly.</p>
           </motion.div>
-          
+
           <div className="roadmap-container">
-             {/* Desktop Horizontal Line */}
-             <div className="desktop-line-container">
-                <div style={{ position: 'absolute', width: '100%', height: '100%', background: 'var(--border-color)', borderRadius: '4px' }} />
-                <motion.div style={{ position: 'absolute', left: 0, top: 0, height: '100%', background: 'linear-gradient(to right, var(--brand-red), #ff8a00)', width: lineWidth, borderRadius: '4px', zIndex: 1 }} />
-             </div>
+            {/* Desktop Horizontal Line */}
+            <div className="desktop-line-container">
+              <div style={{ position: 'absolute', width: '100%', height: '100%', background: 'var(--border-color)', borderRadius: '4px' }} />
+              <motion.div style={{ position: 'absolute', left: 0, top: 0, height: '100%', background: 'linear-gradient(to right, var(--brand-red), #ff8a00)', width: lineWidth, borderRadius: '4px', zIndex: 1 }} />
+            </div>
 
-             {/* Mobile Vertical Line */}
-             <div className="mobile-line-container">
-                <div style={{ position: 'absolute', width: '100%', height: '100%', background: 'var(--border-color)', borderRadius: '4px' }} />
-                <motion.div style={{ position: 'absolute', left: 0, top: 0, width: '100%', background: 'linear-gradient(to bottom, var(--brand-red), #ff8a00)', height: lineHeight, borderRadius: '4px', zIndex: 1 }} />
-             </div>
-             
-             {/* Step 1 */}
-             <motion.div 
-               initial={{ opacity: 0, y: 50 }}
-               whileInView={{ opacity: 1, y: 0 }}
-               viewport={{ once: true, margin: "-100px" }}
-               transition={{ type: "spring", bounce: 0.4 }}
-               className="roadmap-step"
-             >
-                <h3 style={{ fontSize: 'clamp(1.5rem, 6vw, 2rem)', marginBottom: '1rem' }}>1. Post Any Service Needed</h3>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '1.25rem', marginBottom: '2rem' }}>From plumbing to programming, repairing to designing. Post exactly what you need in under a minute without long forms.</p>
-                <div className="roadmap-icons" style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-                   <motion.div whileHover={{ scale: 1.1, y: -5, color: '#f59e0b' }} className="modern-card" style={{ padding: '1rem', borderRadius: '16px' }}><Wrench size={24} /></motion.div>
-                   <motion.div whileHover={{ scale: 1.1, y: -5, color: '#3b82f6' }} className="modern-card" style={{ padding: '1rem', borderRadius: '16px' }}><Code size={24} /></motion.div>
-                   <motion.div whileHover={{ scale: 1.1, y: -5, color: '#10b981' }} className="modern-card" style={{ padding: '1rem', borderRadius: '16px' }}><Paintbrush size={24} /></motion.div>
-                   <motion.div whileHover={{ scale: 1.1, y: -5, color: '#ec4899' }} className="modern-card" style={{ padding: '1rem', borderRadius: '16px' }}><Scissors size={24} /></motion.div>
-                   <motion.div whileHover={{ scale: 1.1, y: -5, color: '#8b5cf6' }} className="modern-card" style={{ padding: '1rem', borderRadius: '16px' }}><Camera size={24} /></motion.div>
-                   <motion.div whileHover={{ scale: 1.1, y: -5, color: '#ef4444' }} className="modern-card" style={{ padding: '1rem', borderRadius: '16px' }}><Music size={24} /></motion.div>
-                   <motion.div whileHover={{ scale: 1.1, y: -5, color: '#0f172a' }} className="modern-card" style={{ padding: '1rem', borderRadius: '16px' }}><Briefcase size={24} /></motion.div>
-                </div>
-             </motion.div>
+            {/* Mobile Vertical Line */}
+            <div className="mobile-line-container">
+              <div style={{ position: 'absolute', width: '100%', height: '100%', background: 'var(--border-color)', borderRadius: '4px' }} />
+              <motion.div style={{ position: 'absolute', left: 0, top: 0, width: '100%', background: 'linear-gradient(to bottom, var(--brand-red), #ff8a00)', height: lineHeight, borderRadius: '4px', zIndex: 1 }} />
+            </div>
 
-             {/* Step 2 */}
-             <motion.div 
-               initial={{ opacity: 0, y: 50 }}
-               whileInView={{ opacity: 1, y: 0 }}
-               viewport={{ once: true, margin: "-100px" }}
-               transition={{ type: "spring", bounce: 0.4 }}
-               className="roadmap-step"
-             >
-                <h3 style={{ fontSize: 'clamp(1.5rem, 6vw, 2rem)', marginBottom: '1rem' }}>2. AI Radar Matching</h3>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '1.25rem', marginBottom: '2rem' }}>Our AI scans your neighborhood instantly (within a 5km radius) to alert highly skilled and relevant local pros via push notifications.</p>
-                <motion.div 
-                   animate={{ scale: [1, 1.05, 1], boxShadow: ['0 0 0 0 rgba(239,68,68,0)', '0 0 0 20px rgba(239,68,68,0.1)', '0 0 0 40px rgba(239,68,68,0)'] }}
-                   transition={{ repeat: Infinity, duration: 2 }}
-                   className="modern-card" style={{ padding: '2rem', borderRadius: '50%', display: 'inline-flex', background: 'var(--brand-red-light)', color: 'var(--brand-red)', border: 'none' }}
-                >
-                   <Search size={48} />
-                </motion.div>
-             </motion.div>
+            {/* Step 1 */}
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ type: "spring", bounce: 0.4 }}
+              className="roadmap-step"
+            >
+              <h3 style={{ fontSize: 'clamp(1.5rem, 6vw, 2rem)', marginBottom: '1rem' }}>1. Post Any Service Needed</h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '1.25rem', marginBottom: '2rem' }}>From plumbing to programming, repairing to designing. Post exactly what you need in under a minute without long forms.</p>
+              <div className="roadmap-icons" style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                <motion.div whileHover={{ scale: 1.1, y: -5, color: '#f59e0b' }} className="modern-card" style={{ padding: '1rem', borderRadius: '16px' }}><Wrench size={24} /></motion.div>
+                <motion.div whileHover={{ scale: 1.1, y: -5, color: '#3b82f6' }} className="modern-card" style={{ padding: '1rem', borderRadius: '16px' }}><Code size={24} /></motion.div>
+                <motion.div whileHover={{ scale: 1.1, y: -5, color: '#10b981' }} className="modern-card" style={{ padding: '1rem', borderRadius: '16px' }}><Paintbrush size={24} /></motion.div>
+                <motion.div whileHover={{ scale: 1.1, y: -5, color: '#ec4899' }} className="modern-card" style={{ padding: '1rem', borderRadius: '16px' }}><Scissors size={24} /></motion.div>
+                <motion.div whileHover={{ scale: 1.1, y: -5, color: '#8b5cf6' }} className="modern-card" style={{ padding: '1rem', borderRadius: '16px' }}><Camera size={24} /></motion.div>
+                <motion.div whileHover={{ scale: 1.1, y: -5, color: '#ef4444' }} className="modern-card" style={{ padding: '1rem', borderRadius: '16px' }}><Music size={24} /></motion.div>
+                <motion.div whileHover={{ scale: 1.1, y: -5, color: '#0f172a' }} className="modern-card" style={{ padding: '1rem', borderRadius: '16px' }}><Briefcase size={24} /></motion.div>
+              </div>
+            </motion.div>
 
-             {/* Step 3 */}
-             <motion.div 
-               initial={{ opacity: 0, y: 50 }}
-               whileInView={{ opacity: 1, y: 0 }}
-               viewport={{ once: true, margin: "-100px" }}
-               transition={{ type: "spring", bounce: 0.4 }}
-               className="roadmap-step"
-             >
-                <h3 style={{ fontSize: 'clamp(1.5rem, 6vw, 2rem)', marginBottom: '1rem' }}>3. Direct Connection</h3>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '1.25rem', marginBottom: '2rem' }}>Chat securely, agree on price, and get the job done quickly. No middlemen holding your money hostage.</p>
-                <motion.div whileHover={{ scale: 1.05 }} className="modern-card" style={{ display: 'inline-flex', padding: '1.5rem', borderRadius: '24px', alignItems: 'center', gap: '1rem', background: 'linear-gradient(135deg, var(--brand-red) 0%, #ff8a00 100%)', color: 'white', border: 'none' }}>
-                   <div style={{ background: 'white', color: 'var(--brand-red)', padding: '0.5rem', borderRadius: '12px' }}><MessageSquare size={24} /></div>
-                   <span style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>"I can be there in 10 mins!"</span>
-                </motion.div>
-             </motion.div>
+            {/* Step 2 */}
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ type: "spring", bounce: 0.4 }}
+              className="roadmap-step"
+            >
+              <h3 style={{ fontSize: 'clamp(1.5rem, 6vw, 2rem)', marginBottom: '1rem' }}>2. AI Radar Matching</h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '1.25rem', marginBottom: '2rem' }}>Our AI scans your neighborhood instantly (within a 5km radius) to alert highly skilled and relevant local pros via push notifications.</p>
+              <motion.div
+                animate={{ scale: [1, 1.05, 1], boxShadow: ['0 0 0 0 rgba(239,68,68,0)', '0 0 0 20px rgba(239,68,68,0.1)', '0 0 0 40px rgba(239,68,68,0)'] }}
+                transition={{ repeat: Infinity, duration: 2 }}
+                className="modern-card" style={{ padding: '2rem', borderRadius: '50%', display: 'inline-flex', background: 'var(--brand-red-light)', color: 'var(--brand-red)', border: 'none' }}
+              >
+                <Search size={48} />
+              </motion.div>
+            </motion.div>
+
+            {/* Step 3 */}
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ type: "spring", bounce: 0.4 }}
+              className="roadmap-step"
+            >
+              <h3 style={{ fontSize: 'clamp(1.5rem, 6vw, 2rem)', marginBottom: '1rem' }}>3. Direct Connection</h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '1.25rem', marginBottom: '2rem' }}>Chat securely, agree on price, and get the job done quickly. No middlemen holding your money hostage.</p>
+              <motion.div whileHover={{ scale: 1.05 }} className="modern-card" style={{ display: 'inline-flex', padding: '1.5rem', borderRadius: '24px', alignItems: 'center', gap: '1rem', background: 'linear-gradient(135deg, var(--brand-red) 0%, #ff8a00 100%)', color: 'white', border: 'none' }}>
+                <div style={{ background: 'white', color: 'var(--brand-red)', padding: '0.5rem', borderRadius: '12px' }}><MessageSquare size={24} /></div>
+                <span style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>"I can be there in 10 mins!"</span>
+              </motion.div>
+            </motion.div>
           </div>
         </div>
       </section>
@@ -2440,18 +2920,18 @@ function LandingPage({ setPage, isLoggedIn, onAuth, onLogout }) {
       <section id="features" className="section">
         <div className="container grid-2">
           <motion.div
-             initial="hidden"
-             whileInView="visible"
-             viewport={{ once: true }}
-             variants={staggerCards}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={staggerCards}
           >
             <motion.span variants={fadeInUp} className="section-tag">Core Value</motion.span>
-            <motion.h2 variants={fadeInUp} className="section-title" style={{ 
-                background: 'linear-gradient(135deg, var(--brand-red) 0%, #ff8a00 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent'
+            <motion.h2 variants={fadeInUp} className="section-title" style={{
+              background: 'linear-gradient(135deg, var(--brand-red) 0%, #ff8a00 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent'
             }}>Hyperlocal by Design</motion.h2>
-            
+
             <ul className="check-list" style={{ marginTop: '2rem' }}>
               <motion.li variants={fadeInUp} whileHover={{ x: 15, color: 'var(--brand-red)' }}>
                 <div className="check-icon"><MapPin size={24} /></div>
@@ -2477,49 +2957,49 @@ function LandingPage({ setPage, isLoggedIn, onAuth, onLogout }) {
             </ul>
           </motion.div>
           <motion.div
-             initial={{ opacity: 0, scale: 0.5, rotate: -15 }}
-             whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
-             viewport={{ once: true }}
-             transition={{ type: "spring", stiffness: 60, damping: 15 }}
-             style={{ position: 'relative' }}
+            initial={{ opacity: 0, scale: 0.5, rotate: -15 }}
+            whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
+            viewport={{ once: true }}
+            transition={{ type: "spring", stiffness: 60, damping: 15 }}
+            style={{ position: 'relative' }}
           >
-             <motion.div 
-                 animate="animate" 
-                 variants={floatAnim}
-                 style={{ background: 'linear-gradient(135deg, var(--brand-red) 0%, #ff8a00 100%)', borderRadius: '32px', padding: '1rem' }}
-             >
-                <div style={{ background: 'white', borderRadius: '24px', padding: 'clamp(1.5rem, 8vw, 3rem)', transform: 'rotate(-4deg)', boxShadow: '0 20px 50px rgba(0,0,0,0.1)' }}>
-                   <motion.div whileHover={{ scale: 1.05 }} style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '2rem', paddingBottom: '2rem', borderBottom: '1px solid var(--border-color)', cursor: 'pointer' }}>
-                      <div style={{ width: '60px', height: '60px', borderRadius: '16px', background: 'var(--brand-red-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--brand-red)' }}>
-                          <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 1.5 }}><MessageSquare size={28} /></motion.div>
-                      </div>
-                      <div>
-                          <h4 style={{ fontSize: '1.25rem' }}>Need a Plumber!</h4>
-                          <p style={{ color: 'var(--brand-red)' }}>0.5km away • High Priority</p>
-                      </div>
-                   </motion.div>
-                   <motion.div whileHover={{ scale: 1.05 }} style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', cursor: 'pointer' }}>
-                      <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>
-                          <Users size={28} />
-                      </div>
-                      <div>
-                          <h4 style={{ fontSize: '1.25rem' }}>Freelance Web Dev</h4>
-                          <p style={{ color: 'var(--text-secondary)' }}>1.2km away • Applied 2m ago</p>
-                      </div>
-                   </motion.div>
-                </div>
-             </motion.div>
+            <motion.div
+              animate="animate"
+              variants={floatAnim}
+              style={{ background: 'linear-gradient(135deg, var(--brand-red) 0%, #ff8a00 100%)', borderRadius: '32px', padding: '1rem' }}
+            >
+              <div style={{ background: 'white', borderRadius: '24px', padding: 'clamp(1.5rem, 8vw, 3rem)', transform: 'rotate(-4deg)', boxShadow: '0 20px 50px rgba(0,0,0,0.1)' }}>
+                <motion.div whileHover={{ scale: 1.05 }} style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '2rem', paddingBottom: '2rem', borderBottom: '1px solid var(--border-color)', cursor: 'pointer' }}>
+                  <div style={{ width: '60px', height: '60px', borderRadius: '16px', background: 'var(--brand-red-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--brand-red)' }}>
+                    <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 1.5 }}><MessageSquare size={28} /></motion.div>
+                  </div>
+                  <div>
+                    <h4 style={{ fontSize: '1.25rem' }}>Need a Plumber!</h4>
+                    <p style={{ color: 'var(--brand-red)' }}>0.5km away • High Priority</p>
+                  </div>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.05 }} style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', cursor: 'pointer' }}>
+                  <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>
+                    <Users size={28} />
+                  </div>
+                  <div>
+                    <h4 style={{ fontSize: '1.25rem' }}>Freelance Web Dev</h4>
+                    <p style={{ color: 'var(--text-secondary)' }}>1.2km away • Applied 2m ago</p>
+                  </div>
+                </motion.div>
+              </div>
+            </motion.div>
           </motion.div>
         </div>
       </section>
 
       <section id="pricing" className="section relative overflow-hidden bg-slate-50/50 py-24 md:py-32">
         <div className="container mx-auto px-6 relative z-10">
-          <motion.div 
-             initial={{ opacity: 0, y: -20 }}
-             whileInView={{ opacity: 1, y: 0 }}
-             viewport={{ once: true }}
-             className="text-center mb-20"
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-20"
           >
             <span className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-600 px-5 py-2 rounded-full font-black text-xs uppercase tracking-widest mb-6 border border-indigo-100 shadow-sm">
               <TrendingUp size={14} /> Hyper-Growth Platform
@@ -2528,7 +3008,7 @@ function LandingPage({ setPage, isLoggedIn, onAuth, onLogout }) {
             <p className="text-lg md:text-xl text-slate-500 font-bold max-w-2xl mx-auto">Get noticed faster with featured posts. Stand out at the top of local feeds with precision placement.</p>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-10 items-stretch"
             initial="hidden"
             whileInView="visible"
@@ -2545,7 +3025,7 @@ function LandingPage({ setPage, isLoggedIn, onAuth, onLogout }) {
                 <span className="text-5xl font-black text-slate-900 tracking-tighter">₹79</span>
                 <span className="text-slate-400 font-black text-lg">/post</span>
               </div>
-              
+
               <div className="space-y-4 flex-grow mb-10">
                 {[
                   'Priority category feed',
@@ -2559,26 +3039,26 @@ function LandingPage({ setPage, isLoggedIn, onAuth, onLogout }) {
                   </div>
                 ))}
               </div>
-              
+
               <button className="w-full bg-white text-black border-4 border-black py-4 rounded-2xl font-black text-lg shadow-neo hover:bg-slate-50 transition-all uppercase tracking-wide">
                 Get City Top
               </button>
             </motion.div>
 
             {/* Tier 2: Premium Boost (Featured) */}
-            <motion.div 
-              variants={fadeInUp} 
-              whileHover={{ scale: 1.05, y: -10 }} 
+            <motion.div
+              variants={fadeInUp}
+              whileHover={{ scale: 1.05, y: -10 }}
               className="relative bg-gradient-to-br from-brand-red to-orange-500 rounded-[32px] p-8 md:p-10 flex flex-col text-white shadow-premium scale-100 lg:scale-105 border-4 border-black ring-4 ring-orange-500/20"
             >
-              <motion.div 
-                animate={{ scale: [1, 1.1, 1], opacity: [0.8, 1, 0.8] }} 
-                transition={{ repeat: Infinity, duration: 3 }} 
+              <motion.div
+                animate={{ scale: [1, 1.1, 1], opacity: [0.8, 1, 0.8] }}
+                transition={{ repeat: Infinity, duration: 3 }}
                 className="absolute -top-5 left-1/2 -translate-x-1/2 bg-black text-white px-6 py-2 rounded-full font-black text-xs tracking-widest border-2 border-white shadow-xl"
               >
                 MOST POPULAR
               </motion.div>
-              
+
               <div className="mb-8 mt-4">
                 <h3 className="text-2xl font-black mb-2">Premium Boost</h3>
                 <p className="text-white/80 font-bold">Maximum market exposure</p>
@@ -2587,7 +3067,7 @@ function LandingPage({ setPage, isLoggedIn, onAuth, onLogout }) {
                 <span className="text-5xl font-black tracking-tighter">₹399</span>
                 <span className="text-white/70 font-black text-lg">/week</span>
               </div>
-              
+
               <div className="space-y-4 flex-grow mb-10">
                 {[
                   'Highlighted visual UI',
@@ -2602,7 +3082,7 @@ function LandingPage({ setPage, isLoggedIn, onAuth, onLogout }) {
                   </div>
                 ))}
               </div>
-              
+
               <button className="w-full bg-white text-brand-red border-4 border-black py-4 rounded-2xl font-black text-lg shadow-neo hover:bg-slate-50 transition-all uppercase tracking-wide">
                 Choose Premium
               </button>
@@ -2618,7 +3098,7 @@ function LandingPage({ setPage, isLoggedIn, onAuth, onLogout }) {
                 <span className="text-5xl font-black text-white tracking-tighter">₹1.4k</span>
                 <span className="text-slate-500 font-black text-lg">/mo</span>
               </div>
-              
+
               <div className="space-y-4 flex-grow mb-10">
                 {[
                   'Unlimited featured posts',
@@ -2633,7 +3113,7 @@ function LandingPage({ setPage, isLoggedIn, onAuth, onLogout }) {
                   </div>
                 ))}
               </div>
-              
+
               <button className="w-full bg-white text-slate-900 border-4 border-black py-4 rounded-2xl font-black text-lg shadow-neo hover:bg-slate-50 transition-all uppercase tracking-wide">
                 Contact Sales
               </button>
@@ -2645,81 +3125,81 @@ function LandingPage({ setPage, isLoggedIn, onAuth, onLogout }) {
 
       <section id="testimonials" className="section relative py-24 md:py-32 overflow-hidden bg-slate-50/30">
         <div className="container mx-auto px-6 md:px-8">
-          <motion.div 
-             initial={{ opacity: 0, y: -20 }}
-             whileInView={{ opacity: 1, y: 0 }}
-             viewport={{ once: true }}
-             className="text-center mb-20"
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-20"
           >
             <span className="inline-flex items-center gap-2 bg-rose-50 text-rose-600 px-5 py-2 rounded-full font-black text-xs uppercase tracking-widest mb-6 border border-rose-100 shadow-sm">
-               Real Stories
+              Real Stories
             </span>
             <h2 className="text-4xl md:text-6xl font-black tracking-tighter text-slate-900 mb-6">What Nagpur is <span className="text-brand-red">Saying.</span></h2>
             <p className="text-lg md:text-xl text-slate-500 font-bold max-w-2xl mx-auto">Join thousands of local professionals who have transformed their work-life balance on Bartr.</p>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             className="grid grid-cols-1 lg:grid-cols-3 gap-8"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-50px" }}
             variants={staggerCards}
           >
-             {[
-               { quote: "I posted once and got 3 calls in 15 minutes. Much faster and direct than any other app.", author: "Local Freelancer" },
-               { quote: "Much better than WhatsApp groups. Cleaner, faster, and actually shows relevant people nearby.", author: "Small Business Owner" },
-               { quote: "Feels local and real, not like those massive job portals. Found a great gig a few blocks away.", author: "Individual User" }
-             ].map((t, i) => (
-               <motion.div 
-                 key={i}
-                 variants={fadeInUp}
-                 whileHover={{ scale: 1.02, y: -5 }}
-                 className="bg-white/70 backdrop-blur-xl border border-white/50 rounded-[32px] p-8 md:p-10 shadow-crystal relative group"
-               >
-                  <div className="text-brand-red mb-6 opacity-30 group-hover:opacity-100 transition-opacity"><Quote size={40} fill="currentColor" /></div>
-                  <p className="text-lg md:text-xl font-bold text-slate-700 italic mb-8 relative z-10 leading-relaxed">"{t.quote}"</p>
-                  <div className="flex items-center gap-4 mt-auto">
-                      <div className="w-12 h-12 rounded-full bg-slate-100 border-2 border-brand-red/20 overflow-hidden">
-                        <div className="w-full h-full bg-gradient-to-br from-brand-red/10 to-orange-500/10" />
-                      </div>
-                      <div>
-                          <h4 className="font-black text-slate-900 leading-none mb-1">{t.author}</h4>
-                          <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Nagpur, India</span>
-                      </div>
+            {[
+              { quote: "I posted once and got 3 calls in 15 minutes. Much faster and direct than any other app.", author: "Local Freelancer" },
+              { quote: "Much better than WhatsApp groups. Cleaner, faster, and actually shows relevant people nearby.", author: "Small Business Owner" },
+              { quote: "Feels local and real, not like those massive job portals. Found a great gig a few blocks away.", author: "Individual User" }
+            ].map((t, i) => (
+              <motion.div
+                key={i}
+                variants={fadeInUp}
+                whileHover={{ scale: 1.02, y: -5 }}
+                className="bg-white/70 backdrop-blur-xl border border-white/50 rounded-[32px] p-8 md:p-10 shadow-crystal relative group"
+              >
+                <div className="text-brand-red mb-6 opacity-30 group-hover:opacity-100 transition-opacity"><Quote size={40} fill="currentColor" /></div>
+                <p className="text-lg md:text-xl font-bold text-slate-700 italic mb-8 relative z-10 leading-relaxed">"{t.quote}"</p>
+                <div className="flex items-center gap-4 mt-auto">
+                  <div className="w-12 h-12 rounded-full bg-slate-100 border-2 border-brand-red/20 overflow-hidden">
+                    <div className="w-full h-full bg-gradient-to-br from-brand-red/10 to-orange-500/10" />
                   </div>
-               </motion.div>
-             ))}
+                  <div>
+                    <h4 className="font-black text-slate-900 leading-none mb-1">{t.author}</h4>
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Nagpur, India</span>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
           </motion.div>
         </div>
       </section>
 
       <section className="section relative py-24 md:py-40 overflow-hidden bg-gradient-to-br from-brand-red to-orange-500 text-white text-center">
-        <motion.div 
-           initial={{ opacity: 0 }}
-           animate={{ opacity: 0.15 }}
-           transition={{ duration: 2 }}
-           className="absolute inset-0 pointer-events-none"
-           style={{ backgroundImage: 'radial-gradient(circle at center, white 2px, transparent 2px)', backgroundSize: '60px 60px', transform: 'rotate(20deg)' }}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.15 }}
+          transition={{ duration: 2 }}
+          className="absolute inset-0 pointer-events-none"
+          style={{ backgroundImage: 'radial-gradient(circle at center, white 2px, transparent 2px)', backgroundSize: '60px 60px', transform: 'rotate(20deg)' }}
         />
         <div className="container mx-auto px-6 md:px-8 relative z-10">
-           <motion.div
-             initial={{ opacity: 0, scale: 0.9, y: 30 }}
-             whileInView={{ opacity: 1, scale: 1, y: 0 }}
-             viewport={{ once: true }}
-             transition={{ type: "spring", stiffness: 100 }}
-           >
-             <h2 className="text-white text-4xl md:text-7xl font-black tracking-tighter mb-8 leading-[0.9]">Ready to get <br className="hidden md:block" /><span className="text-black/20">started?</span></h2>
-             <p className="text-xl md:text-2xl text-white/90 font-bold mb-12 max-w-2xl mx-auto leading-relaxed">
-               Join Nagpur's fastest growing community of workers, businesses, and opportunity seekers.
-             </p>
-             <motion.button 
-                whileHover={{ scale: 1.05, y: -5 }} 
-                whileTap={{ scale: 0.95 }} 
-                className="bg-white text-brand-red border-4 border-black px-12 py-6 rounded-2xl font-black text-2xl shadow-neo uppercase tracking-widest transition-all"
-             >
-               Join Bartr Now
-             </motion.button>
-           </motion.div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 30 }}
+            whileInView={{ opacity: 1, scale: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ type: "spring", stiffness: 100 }}
+          >
+            <h2 className="text-white text-4xl md:text-7xl font-black tracking-tighter mb-8 leading-[0.9]">Ready to get <br className="hidden md:block" /><span className="text-black/20">started?</span></h2>
+            <p className="text-xl md:text-2xl text-white/90 font-bold mb-12 max-w-2xl mx-auto leading-relaxed">
+              Join Nagpur's fastest growing community of workers, businesses, and opportunity seekers.
+            </p>
+            <motion.button
+              whileHover={{ scale: 1.05, y: -5 }}
+              whileTap={{ scale: 0.95 }}
+              className="bg-white text-brand-red border-4 border-black px-12 py-6 rounded-2xl font-black text-2xl shadow-neo uppercase tracking-widest transition-all"
+            >
+              Join Bartr Now
+            </motion.button>
+          </motion.div>
         </div>
       </section>
 
