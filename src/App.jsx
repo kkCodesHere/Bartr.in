@@ -1836,7 +1836,7 @@ const PitchFireRegistration = ({ setPage, user }) => {
       setLoading(''); // Hide overlay so payment modal is interactable
 
       const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID || '', // Configured in frontend env settings
+        key: orderData.keyId || import.meta.env.VITE_RAZORPAY_KEY_ID || '', // Configured in frontend env settings or returned by server
         amount: orderData.amount,
         currency: orderData.currency,
         name: "Bartr.in",

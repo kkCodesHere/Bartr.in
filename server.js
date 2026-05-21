@@ -42,6 +42,7 @@ app.post('/create-order', async (req, res) => {
     const order = await razorpay.orders.create(options);
     res.json({
       success: true,
+      keyId: process.env.RAZORPAY_KEY_ID,
       order_id: order.id,
       amount: order.amount,
       currency: order.currency
