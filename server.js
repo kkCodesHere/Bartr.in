@@ -17,13 +17,20 @@ app.use(express.json());
 // Structure: { "email@example.com": { otp: "123456", expiresAt: 1714000000000 } }
 const otps = {};
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID || '',
-  key_secret: process.env.RAZORPAY_KEY_SECRET || ''
-});
+const razorpay =
+  process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET
+    ? new Razorpay({
+        key_id: process.env.RAZORPAY_KEY_ID,
+        key_secret: process.env.RAZORPAY_KEY_SECRET,
+      })
+    : null;
 
 // Create Razorpay Order
 app.post('/create-order', async (req, res) => {
+  if (!razorpay) {
+    return res.status(503).json({ success: false, error: 'Razorpay is not configured on the server.' });
+  }
+
   // Amount is ₹1200, which is 120000 paise
   const options = {
     amount: 1200 * 100, // amount in paise
@@ -47,6 +54,10 @@ app.post('/create-order', async (req, res) => {
 
 // Verify Razorpay Payment Signature
 app.post('/verify-payment', (req, res) => {
+  if (!process.env.RAZORPAY_KEY_SECRET) {
+    return res.status(503).json({ success: false, error: 'Razorpay is not configured on the server.' });
+  }
+
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
   if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
@@ -54,7 +65,7 @@ app.post('/verify-payment', (req, res) => {
   }
 
   const generated_signature = crypto
-    .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET || '')
+    .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
     .update(razorpay_order_id + "|" + razorpay_payment_id)
     .digest('hex');
 
@@ -192,14 +203,6 @@ const SUBSCRIPTION_PLANS = {
 };
 
 const VALID_COUPON = process.env.RAZORPAY_COUPON_CODE || 'COCKROACH';
-
-const razorpay =
-  process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET
-    ? new Razorpay({
-        key_id: process.env.RAZORPAY_KEY_ID,
-        key_secret: process.env.RAZORPAY_KEY_SECRET,
-      })
-    : null;
 
 app.post('/create-subscription-order', async (req, res) => {
   const { planId, couponCode } = req.body;
