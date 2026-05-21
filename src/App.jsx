@@ -242,7 +242,33 @@ const floatAnim = {
   }
 };
 
-const Navbar = ({ scrolled, setPage, isDark, isLoggedIn, onAuth, onLogout, currentPage }) => (
+const Navbar = ({ scrolled, setPage, isDark, isLoggedIn, onAuth, onLogout, currentPage }) => {
+  const [hasUnread, setHasUnread] = useState(false);
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    let channel;
+    
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        channel = supabase.channel('navbar_notifications')
+          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `receiver_id=eq.${session.user.id}` }, () => {
+            setHasUnread(true);
+          })
+          .subscribe();
+      }
+    });
+
+    const handleInboxOpened = () => setHasUnread(false);
+    window.addEventListener('openInboxModal', handleInboxOpened);
+
+    return () => {
+      if (channel) supabase.removeChannel(channel);
+      window.removeEventListener('openInboxModal', handleInboxOpened);
+    };
+  }, [isLoggedIn]);
+
+  return (
   <nav className={`navbar transition-all duration-500 fixed top-0 w-full z-[1000] ${scrolled ? 'bg-white/80 backdrop-blur-2xl border-b border-white/20 shadow-crystal' : 'bg-transparent'}`}>
     <div className="container mx-auto px-6 md:px-8 py-3 md:py-5 flex flex-col md:flex-row justify-between items-center gap-4 md:gap-0">
       {/* Top Row: Brand (Left) + Auth (Right) on mobile */}
@@ -259,7 +285,10 @@ const Navbar = ({ scrolled, setPage, isDark, isLoggedIn, onAuth, onLogout, curre
         <div className="flex md:hidden gap-2">
           {isLoggedIn ? (
             <>
-              <button onClick={() => window.dispatchEvent(new Event('openInboxModal'))} className="bg-white border-2 border-slate-900 px-3 py-2 rounded-xl text-slate-900 flex items-center justify-center"><MessageSquare size={16} /></button>
+              <button onClick={() => window.dispatchEvent(new Event('openInboxModal'))} className="bg-white border-2 border-slate-900 px-3 py-2 rounded-xl text-slate-900 flex items-center justify-center relative">
+                <MessageSquare size={16} />
+                {hasUnread && <span style={{ position: 'absolute', top: '-4px', right: '-4px', width: '10px', height: '10px', background: '#ef4444', borderRadius: '50%', border: '2px solid white' }}></span>}
+              </button>
               <button onClick={onLogout} className="bg-white border-2 border-slate-900 px-4 py-2 rounded-xl font-black text-xs shadow-sm uppercase">Logout</button>
             </>
           ) : (
@@ -298,9 +327,10 @@ const Navbar = ({ scrolled, setPage, isDark, isLoggedIn, onAuth, onLogout, curre
             <motion.button
               whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
               onClick={() => window.dispatchEvent(new Event('openInboxModal'))}
-              className="bg-white border-2 border-black w-10 h-10 rounded-xl flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-black"
+              className="bg-white border-2 border-black w-10 h-10 rounded-xl flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-black relative"
             >
               <MessageSquare size={18} />
+              {hasUnread && <span style={{ position: 'absolute', top: '-6px', right: '-6px', width: '14px', height: '14px', background: '#ef4444', borderRadius: '50%', border: '3px solid white', boxShadow: '0 0 0 1px black' }}></span>}
             </motion.button>
             <motion.button
               whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={onLogout}
@@ -328,9 +358,8 @@ const Navbar = ({ scrolled, setPage, isDark, isLoggedIn, onAuth, onLogout, curre
       </div>
     </div>
   </nav>
-
-
-);
+  );
+};
 
 // --- POST GIG MODAL ---
 const PostGigModal = ({ isOpen, onClose, user, onPostSuccess, categories }) => {
@@ -712,8 +741,8 @@ const GigsPage = ({ setPage, isLoggedIn, onAuth, onLogout, currentPage, user }) 
                           );
                         }
                         
-                        const isOwner = gig.client_id === user.id;
-                        const hasApplied = myApplications.includes(gig.id);
+                        const isOwner = user && gig.client_id === user.id;
+                        const hasApplied = user && myApplications.includes(gig.id);
                         
                         if (isOwner) {
                           return (
@@ -1715,6 +1744,20 @@ const EventsPage = ({ setPage, isLoggedIn, onAuth, onLogout }) => {
   );
 };
 
+const loadRazorpayScript = () => {
+  return new Promise((resolve) => {
+    if (window.Razorpay) {
+      resolve(true);
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
+
 const PitchFireRegistration = ({ setPage, user }) => {
   const [step, setStep] = useState(1);
   const [teamData, setTeamData] = useState({ teamName: '', member1: '', member2: '', idea: '' });
@@ -1771,34 +1814,102 @@ const PitchFireRegistration = ({ setPage, user }) => {
   };
 
   const processPayment = async () => {
-    setLoading('Verifying payment & generating ticket...');
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let result = 'BART-PF-';
-    for (let i = 0; i < 4; i++) result += chars.charAt(Math.floor(Math.random() * chars.length));
-    setTicketId(result);
-    setStep(4);
+    setLoading('Initializing payment gateway...');
+    const isScriptLoaded = await loadRazorpayScript();
+    if (!isScriptLoaded) {
+      alert("Failed to load Razorpay Checkout SDK. Check your internet connection.");
+      setLoading('');
+      return;
+    }
 
     try {
-      // 1. Save to Supabase
-      const { error: dbError } = await supabase.from('registrations').insert({
-        user_id: user?.id,
-        team_name: teamData.teamName,
-        ticket_id: result,
-        payment_status: 'success'
-      });
-
-      if (dbError) throw dbError;
-
-      // 2. Send email notification
-      await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/send-ticket`, {
+      // 1. Create order on the backend
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/create-order`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, ticketId: result, teamName: teamData.teamName })
+        headers: { 'Content-Type': 'application/json' }
       });
+      const orderData = await res.json();
+      if (!orderData.success) {
+        throw new Error(orderData.error || 'Failed to create order on server');
+      }
+
+      setLoading(''); // Hide overlay so payment modal is interactable
+
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || '', // Configured in frontend env settings
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: "Bartr.in",
+        description: "Founders Arena Slot Registration",
+        image: "https://bartr.in/logo.png",
+        order_id: orderData.order_id,
+        handler: async function (response) {
+          setLoading('Verifying payment & generating ticket...');
+          try {
+            // 2. Verify payment signature on the backend
+            const verifyRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/verify-payment`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature
+              })
+            });
+            const verifyData = await verifyRes.json();
+            
+            if (verifyData.success) {
+              // 3. Generate Ticket ID and save to Supabase
+              const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+              let result = 'BART-PF-';
+              for (let i = 0; i < 4; i++) result += chars.charAt(Math.floor(Math.random() * chars.length));
+              setTicketId(result);
+
+              const { error: dbError } = await supabase.from('registrations').insert({
+                user_id: user?.id,
+                team_name: teamData.teamName,
+                ticket_id: result,
+                payment_status: 'success'
+              });
+
+              if (dbError) throw dbError;
+
+              // 4. Send ticket details email
+              await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/send-ticket`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, ticketId: result, teamName: teamData.teamName })
+              });
+
+              setStep(4);
+            } else {
+              alert("Payment verification failed: " + (verifyData.error || "Invalid Signature"));
+            }
+          } catch (err) {
+            console.error('Registration/Verification Error:', err);
+            alert('Something went wrong during payment verification. Please reach out to Bartr support.');
+          } finally {
+            setLoading('');
+          }
+        },
+        prefill: {
+          email: email,
+          contact: ''
+        },
+        theme: {
+          color: "#000000"
+        }
+      };
+
+      const rzpObj = new window.Razorpay(options);
+      rzpObj.on('payment.failed', function (resp) {
+        alert("Payment failed: " + resp.error.description);
+      });
+      rzpObj.open();
+
     } catch (err) {
-      console.error('Registration Error:', err);
-      alert('Payment confirmed, but we had trouble saving your data. Please contact support with ID: ' + result);
-    } finally {
+      console.error('Razorpay Integration Error:', err);
+      alert('Failed to initialize checkout. Please check if VITE_API_URL is correct or contact support.');
       setLoading('');
     }
   };
@@ -2874,33 +2985,92 @@ const ChatBox = ({ application, user, gigTitle, onBack }) => {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'white' }}>
-      <div style={{ padding: '1rem', borderBottom: '2px solid #eee', display: 'flex', alignItems: 'center', gap: '1rem', background: '#000', color: 'white' }}>
-        <button onClick={onBack} style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}><ChevronLeft /></button>
-        <div>
-          <div style={{ fontWeight: '900', fontSize: '1.2rem' }}>{chatPartnerName}</div>
-          <div style={{ fontSize: '0.8rem', color: '#aaa', fontWeight: '800' }}>RE: {gigTitle}</div>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#f0f2f5', borderRadius: 'inherit' }}>
+      {/* Modern Header */}
+      <div style={{ padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', background: 'white', borderBottom: '1px solid #e2e8f0', zIndex: 10, boxShadow: '0 2px 10px rgba(0,0,0,0.02)' }}>
+        <button onClick={onBack} style={{ background: '#f1f5f9', border: 'none', color: '#0f172a', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s' }} onMouseEnter={e=>e.currentTarget.style.background='#e2e8f0'} onMouseLeave={e=>e.currentTarget.style.background='#f1f5f9'}>
+          <ChevronLeft size={20} />
+        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+          <div style={{ width: '42px', height: '42px', background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: '900', fontSize: '1.2rem', boxShadow: '0 2px 10px rgba(59, 130, 246, 0.3)' }}>
+            {chatPartnerName.charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <div style={{ fontWeight: '800', fontSize: '1.1rem', color: '#0f172a', letterSpacing: '-0.3px' }}>{chatPartnerName}</div>
+            <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: '700', marginTop: '0.1rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+              <span style={{ width: '6px', height: '6px', background: '#10b981', borderRadius: '50%', display: 'inline-block' }}></span> Active Now
+            </div>
+          </div>
         </div>
       </div>
       
-      <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', background: '#f8fafc' }}>
-        {messages.map(m => (
-          <div key={m.id} style={{ alignSelf: m.sender_id === user.id ? 'flex-end' : 'flex-start', maxWidth: '80%' }}>
-            <div style={{ background: m.sender_id === user.id ? '#10b981' : '#fff', color: m.sender_id === user.id ? '#fff' : '#000', border: m.sender_id === user.id ? 'none' : '2px solid #eee', padding: '0.8rem 1.2rem', borderRadius: '20px', borderBottomRightRadius: m.sender_id === user.id ? '4px' : '20px', borderBottomLeftRadius: m.sender_id === user.id ? '20px' : '4px', fontWeight: '700' }}>
-              {m.content}
-            </div>
-            <div style={{ fontSize: '0.6rem', color: '#999', marginTop: '0.3rem', textAlign: m.sender_id === user.id ? 'right' : 'left', fontWeight: '800' }}>
-              {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            </div>
-          </div>
-        ))}
+      {/* Chat Area with Pattern */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.8rem', background: '#f8fafc', backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)', backgroundSize: '20px 20px' }}>
+        <div style={{ alignSelf: 'center', background: 'white', padding: '0.4rem 1rem', borderRadius: '100px', fontSize: '0.7rem', fontWeight: '800', color: '#94a3b8', marginBottom: '1rem', border: '1px solid #e2e8f0', boxShadow: '0 2px 5px rgba(0,0,0,0.02)' }}>
+          Regarding: {gigTitle}
+        </div>
+        
+        {messages.map(m => {
+          const isMe = m.sender_id === user.id;
+          return (
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} key={m.id} style={{ alignSelf: isMe ? 'flex-end' : 'flex-start', maxWidth: '75%', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ 
+                background: isMe ? 'linear-gradient(135deg, #000000, #1f2937)' : '#ffffff', 
+                color: isMe ? '#ffffff' : '#0f172a', 
+                padding: '0.8rem 1.2rem', 
+                borderRadius: '20px', 
+                borderBottomRightRadius: isMe ? '4px' : '20px', 
+                borderBottomLeftRadius: isMe ? '20px' : '4px', 
+                fontWeight: '600',
+                fontSize: '0.95rem',
+                lineHeight: '1.4',
+                boxShadow: isMe ? '0 4px 15px rgba(0,0,0,0.1)' : '0 2px 10px rgba(0,0,0,0.04)',
+                border: isMe ? 'none' : '1px solid #e2e8f0'
+              }}>
+                {m.content}
+              </div>
+              <div style={{ fontSize: '0.65rem', color: '#94a3b8', marginTop: '0.4rem', textAlign: isMe ? 'right' : 'left', fontWeight: '700', padding: '0 0.5rem' }}>
+                {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                {isMe && <span style={{ marginLeft: '4px', color: '#3b82f6' }}>✓✓</span>}
+              </div>
+            </motion.div>
+          );
+        })}
         <div ref={messagesEndRef} />
       </div>
 
-      <form onSubmit={handleSend} style={{ padding: '1rem', background: 'white', borderTop: '2px solid #eee', display: 'flex', gap: '0.5rem' }}>
-        <input type="text" value={newMessage} onChange={e=>setNewMessage(e.target.value)} placeholder="Type a message..." style={{ flex: 1, padding: '1rem', borderRadius: '100px', border: '2px solid #eee', outline: 'none', fontWeight: '700' }} />
-        <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} type="submit" style={{ background: '#000', color: 'white', border: 'none', width: '50px', height: '50px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-          <Send size={20} />
+      {/* Modern Input */}
+      <form onSubmit={handleSend} style={{ padding: '1rem 1.5rem', background: 'white', borderTop: '1px solid #e2e8f0', display: 'flex', gap: '0.8rem', alignItems: 'center', zIndex: 10 }}>
+        <div style={{ flex: 1, background: '#f1f5f9', borderRadius: '100px', display: 'flex', alignItems: 'center', padding: '0.5rem 1rem', border: '1px solid #e2e8f0', transition: 'border 0.2s' }}>
+          <input 
+            type="text" 
+            value={newMessage} 
+            onChange={e=>setNewMessage(e.target.value)} 
+            placeholder="Type your message..." 
+            style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontWeight: '600', fontSize: '0.95rem', color: '#0f172a', padding: '0.4rem 0' }} 
+          />
+        </div>
+        <motion.button 
+          whileHover={{ scale: 1.05 }} 
+          whileTap={{ scale: 0.95 }} 
+          type="submit" 
+          disabled={!newMessage.trim()}
+          style={{ 
+            background: newMessage.trim() ? '#000000' : '#cbd5e1', 
+            color: 'white', 
+            border: 'none', 
+            width: '46px', 
+            height: '46px', 
+            borderRadius: '50%', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            cursor: newMessage.trim() ? 'pointer' : 'not-allowed',
+            boxShadow: newMessage.trim() ? '0 4px 15px rgba(0,0,0,0.2)' : 'none',
+            transition: 'all 0.3s'
+          }}
+        >
+          <Send size={18} style={{ marginLeft: '2px' }} />
         </motion.button>
       </form>
     </div>

@@ -3,6 +3,8 @@ import cors from 'cors';
 import crypto from 'crypto';
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import Razorpay from 'razorpay';
 
 dotenv.config();
@@ -14,6 +16,54 @@ app.use(express.json());
 // In-memory store for OTPs
 // Structure: { "email@example.com": { otp: "123456", expiresAt: 1714000000000 } }
 const otps = {};
+
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID || '',
+  key_secret: process.env.RAZORPAY_KEY_SECRET || ''
+});
+
+// Create Razorpay Order
+app.post('/create-order', async (req, res) => {
+  // Amount is ₹1200, which is 120000 paise
+  const options = {
+    amount: 1200 * 100, // amount in paise
+    currency: "INR",
+    receipt: `receipt_order_${Date.now()}`
+  };
+
+  try {
+    const order = await razorpay.orders.create(options);
+    res.json({
+      success: true,
+      order_id: order.id,
+      amount: order.amount,
+      currency: order.currency
+    });
+  } catch (err) {
+    console.error("Razorpay order creation error:", err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Verify Razorpay Payment Signature
+app.post('/verify-payment', (req, res) => {
+  const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+
+  if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+    return res.status(400).json({ success: false, error: 'Missing payment details for verification' });
+  }
+
+  const generated_signature = crypto
+    .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET || '')
+    .update(razorpay_order_id + "|" + razorpay_payment_id)
+    .digest('hex');
+
+  if (generated_signature === razorpay_signature) {
+    res.json({ success: true, message: 'Payment verified successfully' });
+  } else {
+    res.status(400).json({ success: false, error: 'Invalid payment signature. Verification failed.' });
+  }
+});
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
