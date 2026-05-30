@@ -23,6 +23,8 @@
 
 html {
   scroll-behavior: smooth;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 body {
@@ -31,7 +33,26 @@ body {
   font-family: 'Space Grotesk', sans-serif;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
-  min-width: 1280px;
+  width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+#root {
+  width: 100%;
+  min-width: 0;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  max-width: 100%;
+}
+
+button {
+  touch-action: manipulation;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -48,9 +69,18 @@ a {
 }
 
 .container {
+  width: 100%;
   max-width: 1300px;
   margin: 0 auto;
   padding: 0 clamp(1.25rem, 5vw, 2.5rem);
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
 /* Custom Cursor */
@@ -246,8 +276,29 @@ a {
   gap: 3rem;
 }
 
+.grid-2,
+.grid-3 {
+  display: grid;
+  gap: 3rem;
+}
+
+.grid-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: center;
+}
+
+.grid-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 @media (max-width: 992px) {
   .responsive-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .grid-2,
+  .grid-3 {
     grid-template-columns: 1fr;
     gap: 2rem;
   }
@@ -418,6 +469,10 @@ a {
 
 /* Mobile & Small Tablets (The Triage Tier) */
 @media (max-width: 850px) {
+  .container {
+    padding-inline: 1rem;
+  }
+
   .navbar-container {
     flex-wrap: wrap;
     gap: 1rem;
@@ -447,6 +502,39 @@ a {
   .hero {
     padding-top: 180px !important;
   }
+
+  .section {
+    padding: 5rem 0;
+  }
+
+  .section-header {
+    margin-bottom: 3rem;
+  }
+
+  .section-subtitle {
+    font-size: 1rem;
+  }
+
+  .modern-card {
+    padding: 1.5rem;
+    border-radius: 18px;
+  }
+
+  .check-list li {
+    align-items: flex-start;
+  }
+
+  .marquee-container {
+    transform: none;
+    margin: 2rem 0;
+    width: 100%;
+    padding: 1rem 0;
+  }
+
+  .marquee-content {
+    gap: 2rem;
+    font-size: 0.95rem;
+  }
   
   .section-tag {
     margin-top: 1rem;
@@ -459,10 +547,19 @@ a {
     padding-top: 200px !important;
   }
   .section-title {
-    font-size: 3rem !important;
+    font-size: 2.4rem !important;
   }
   .btn {
     width: 100%;
+  }
+
+  .container {
+    padding-inline: 0.875rem;
+  }
+
+  .footer-bottom {
+    flex-direction: column;
+    gap: 1rem;
   }
 }
 

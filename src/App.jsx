@@ -78,47 +78,6 @@ const TracingBackground = () => {
         filter: 'grayscale(100%) brightness(1.2)'
       }}></div>
 
-      {/* Connecting Data Traces */}
-      <svg style={{ position: 'absolute', width: '100%', height: '100%', top: 0, left: 0 }}>
-        {pins.map((pin, i) => {
-          if (i === 0) return null; // Need previous pin to connect to
-          const prevPin = pins[i - 1];
-
-          const dx = pin.x - prevPin.x;
-          const dy = pin.y - prevPin.y;
-          const bend = pin.id > 0.5 ? 0.3 : -0.3;
-          const cx = prevPin.x + dx / 2 - dy * bend;
-          const cy = prevPin.y + dy / 2 + dx * bend;
-
-          const pathD = `M ${prevPin.x}% ${prevPin.y - 4}% Q ${cx}% ${cy}% ${pin.x}% ${pin.y}%`;
-
-          const strokeColor = pin.type === 'success' ? '#10b981' : '#ef4444'; // Bright Green / Bright Red
-
-          return (
-            <motion.path
-              key={`line-${pin.id}`}
-              d={pathD}
-              initial={{ opacity: 0 }}
-              animate={{
-                opacity: [0, 0.6, 0.6, 0],
-                strokeDashoffset: [0, -300] // Fast data zip
-              }}
-              exit={{ opacity: 0 }}
-              transition={{
-                opacity: { duration: pin.duration, ease: "easeInOut" },
-                strokeDashoffset: { duration: 1.5, repeat: Infinity, ease: "linear" }
-              }}
-              fill="transparent"
-              stroke={strokeColor}
-              strokeWidth="1.2"
-              strokeDasharray="4 20" // Zip traces
-              strokeLinecap="round"
-              style={{ filter: `drop-shadow(0px 0px 4px ${strokeColor})`, opacity: 0.8 }}
-            />
-          );
-        })}
-      </svg>
-
       {/* Cyber Nodes */}
       <AnimatePresence>
         {pins.map(pin => {
@@ -401,17 +360,17 @@ const PostGigModal = ({ isOpen, onClose, user, onPostSuccess, categories }) => {
   return (
     <AnimatePresence>
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[10000] flex items-center justify-center p-4 backdrop-blur-xl bg-black/60" onClick={onClose}>
-        <motion.div initial={{ scale: 0.9, y: 30 }} animate={{ scale: 1, y: 0 }} className="bg-white border-[8px] border-black rounded-[40px] w-full max-w-[600px] p-8 shadow-[16px_16px_0px_rgba(0,0,0,1)] relative" onClick={e => e.stopPropagation()}>
-          <button onClick={onClose} className="absolute top-6 right-6 bg-slate-100 text-black p-2 rounded-xl hover:bg-black hover:text-white transition-colors">
+        <motion.div initial={{ scale: 0.9, y: 30 }} animate={{ scale: 1, y: 0 }} className="bg-white border-[5px] sm:border-[8px] border-black rounded-[28px] sm:rounded-[40px] w-full max-w-[600px] max-h-[90vh] overflow-y-auto p-5 sm:p-8 shadow-[8px_8px_0px_rgba(0,0,0,1)] sm:shadow-[16px_16px_0px_rgba(0,0,0,1)] relative" onClick={e => e.stopPropagation()}>
+          <button onClick={onClose} className="absolute top-4 right-4 sm:top-6 sm:right-6 bg-slate-100 text-black p-2 rounded-xl hover:bg-black hover:text-white transition-colors">
             <X size={20} strokeWidth={3} />
           </button>
-          <h2 className="text-4xl font-black uppercase italic mb-6">Post a Gig</h2>
+          <h2 className="text-3xl sm:text-4xl font-black uppercase italic mb-6 pr-12">Post a Gig</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="text-xs font-black uppercase tracking-widest text-slate-400">What do you need?</label>
               <input type="text" placeholder="e.g. Fix my sink, Build a React App" className="w-full bg-slate-50 border-4 border-black p-4 rounded-2xl font-bold focus:bg-white outline-none" value={title} onChange={e=>setTitle(e.target.value)} required />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-xs font-black uppercase tracking-widest text-slate-400">Category</label>
                 <select className="w-full bg-slate-50 border-4 border-black p-4 rounded-2xl font-bold outline-none" value={category} onChange={e=>setCategory(e.target.value)}>
@@ -431,10 +390,152 @@ const PostGigModal = ({ isOpen, onClose, user, onPostSuccess, categories }) => {
               <label className="text-xs font-black uppercase tracking-widest text-slate-400">Description</label>
               <textarea placeholder="Give more details..." className="w-full bg-slate-50 border-4 border-black p-4 rounded-2xl font-bold focus:bg-white outline-none" rows="3" value={description} onChange={e=>setDescription(e.target.value)} required></textarea>
             </div>
-            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} disabled={loading} type="submit" className={`w-full py-4 rounded-2xl font-black text-2xl border-4 border-black shadow-[8px_8px_0px_black] uppercase italic ${loading ? 'opacity-50 cursor-not-allowed bg-slate-500 text-white' : 'bg-brand-red text-white'}`}>
+            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} disabled={loading} type="submit" className={`w-full py-4 rounded-2xl font-black text-xl sm:text-2xl border-4 border-black shadow-[6px_6px_0px_black] sm:shadow-[8px_8px_0px_black] uppercase italic ${loading ? 'opacity-50 cursor-not-allowed bg-slate-500 text-white' : 'bg-brand-red text-white'}`}>
               {loading ? 'Posting...' : 'Post It!'}
             </motion.button>
           </form>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+};
+
+// --- GIG DETAILS MODAL ---
+const GigDetailsModal = ({ gig, catInfo, user, myApplications, applyingGigId, onApply, onClose, formatTime }) => {
+  if (!gig) return null;
+
+  const posterName = gig.user_profiles?.full_name || 'Anonymous';
+  const posterRole = gig.user_profiles?.role || 'User';
+  const isOwner = user && gig.client_id === user.id;
+  const hasApplied = user && myApplications.includes(gig.id);
+  const isApplying = applyingGigId === gig.id;
+
+  const actionLabel = !user
+    ? 'Login to Apply'
+    : isOwner
+      ? 'Your Gig'
+      : hasApplied
+        ? 'Already Applied'
+        : isApplying
+          ? 'Applying...'
+          : 'Apply Now';
+
+  return (
+    <AnimatePresence>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[10000] flex items-center justify-center p-4 backdrop-blur-xl bg-black/70" onClick={onClose}>
+        <motion.div initial={{ scale: 0.9, y: 40, rotate: -1 }} animate={{ scale: 1, y: 0, rotate: 0 }} exit={{ scale: 0.9, y: 40, opacity: 0 }} transition={{ type: 'spring', stiffness: 120, damping: 18 }} className="bg-white border-[5px] sm:border-[8px] border-black rounded-[28px] sm:rounded-[40px] w-full max-w-[900px] max-h-[90vh] overflow-y-auto shadow-[8px_8px_0px_rgba(239,68,68,1)] sm:shadow-[18px_18px_0px_rgba(239,68,68,1)] relative" onClick={e => e.stopPropagation()}>
+          <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', borderRadius: '30px', pointerEvents: 'none' }}>
+            <div style={{ position: 'absolute', top: '-120px', right: '-80px', width: '300px', height: '300px', background: catInfo.color, filter: 'blur(90px)', opacity: 0.22 }} />
+          </div>
+
+          <button onClick={onClose} className="absolute top-4 right-4 sm:top-6 sm:right-6 bg-white text-black p-2 rounded-xl border-[3px] border-black hover:bg-black hover:text-white transition-colors z-10">
+            <X size={20} strokeWidth={3} />
+          </button>
+
+          <div className="relative z-[1] p-5 sm:p-7 md:p-10">
+            <div className="flex flex-wrap items-center gap-3 mb-6">
+              <span style={{ background: `${catInfo.color}18`, color: catInfo.color, border: `2px solid ${catInfo.color}`, padding: '0.55rem 1rem', borderRadius: '999px', fontSize: '0.75rem', fontWeight: 900, textTransform: 'uppercase', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+                {catInfo.icon} {gig.category}
+              </span>
+              <span className="bg-black text-white px-4 py-2 rounded-full text-xs font-black uppercase flex items-center gap-2">
+                <Clock size={14} /> Posted {formatTime(gig.created_at)}
+              </span>
+              <span className="bg-slate-100 text-slate-600 px-4 py-2 rounded-full text-xs font-black uppercase flex items-center gap-2">
+                <Activity size={14} /> {gig.status || 'Active'}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_0.8fr] gap-8">
+              <div>
+                <h2 className="text-[clamp(2.4rem,6vw,5rem)] font-black uppercase italic tracking-tighter leading-[0.85] mb-6">
+                  {gig.title}
+                </h2>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                  <motion.div whileHover={{ y: -4 }} className="bg-slate-50 border-4 border-black rounded-[28px] p-5 shadow-[7px_7px_0px_black]">
+                    <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-2 flex items-center gap-2">
+                      <MapPin size={16} /> Location
+                    </div>
+                    <div className="text-2xl font-black text-slate-900">{gig.location}</div>
+                  </motion.div>
+                  <motion.div whileHover={{ y: -4 }} className="bg-brand-red text-white border-4 border-black rounded-[28px] p-5 shadow-[7px_7px_0px_black]">
+                    <div className="text-xs font-black uppercase tracking-widest text-white/70 mb-2 flex items-center gap-2">
+                      <Zap size={16} /> Offer
+                    </div>
+                    <div className="text-3xl font-black tracking-tighter">{gig.price}</div>
+                  </motion.div>
+                </div>
+
+                <div className="bg-white border-4 border-black rounded-[32px] p-6 md:p-7 shadow-[10px_10px_0px_rgba(15,23,42,1)] mb-8">
+                  <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3 flex items-center gap-2">
+                    <FileText size={16} /> Full Brief
+                  </div>
+                  <p className="text-lg md:text-xl font-bold text-slate-700 leading-relaxed">{gig.description}</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {[
+                    { icon: <ShieldCheck size={20} />, title: 'Safe Contact', text: 'Chat stays inside Bartr until both sides are ready.' },
+                    { icon: <MessageSquare size={20} />, title: 'Direct Talk', text: 'Apply once, then coordinate with the poster.' },
+                    { icon: <CheckCircle size={20} />, title: 'Local First', text: 'Built for fast nearby work in Nagpur.' }
+                  ].map((item) => (
+                    <div key={item.title} className="bg-slate-50 border-2 border-slate-200 rounded-[22px] p-5">
+                      <div className="w-10 h-10 bg-black text-white rounded-xl flex items-center justify-center mb-3">{item.icon}</div>
+                      <h4 className="text-base font-black uppercase mb-1">{item.title}</h4>
+                      <p className="text-sm font-bold text-slate-500 leading-snug">{item.text}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-5">
+                <div className="bg-slate-950 text-white border-4 border-black rounded-[32px] p-6 shadow-[10px_10px_0px_#ef4444]">
+                  <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-5">Posted By</div>
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="w-16 h-16 rounded-2xl bg-white text-black border-4 border-brand-red flex items-center justify-center text-3xl font-black uppercase">{posterName.charAt(0)}</div>
+                    <div>
+                      <h3 className="text-2xl font-black text-white leading-none">{posterName}</h3>
+                      <p className="text-sm font-black text-slate-400 uppercase mt-2">{posterRole}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm font-bold text-slate-300">
+                    <Star size={16} className="text-yellow-300" fill="currentColor" />
+                    New local opportunity poster
+                  </div>
+                </div>
+
+                <div className="bg-white border-4 border-black rounded-[32px] p-6 shadow-[10px_10px_0px_black]">
+                  <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-4">Quick Snapshot</div>
+                  {[
+                    ['Category', gig.category],
+                    ['Budget', gig.price],
+                    ['Area', gig.location],
+                    ['Status', gig.status || 'Active']
+                  ].map(([label, value]) => (
+                    <div key={label} className="flex justify-between gap-4 py-3 border-b border-slate-100 last:border-b-0">
+                      <span className="text-sm font-black uppercase text-slate-400">{label}</span>
+                      <span className="text-sm font-black text-right text-slate-900">{value}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <motion.button
+                  whileHover={!isOwner && !hasApplied ? { scale: 1.03, y: -3 } : {}}
+                  whileTap={!isOwner && !hasApplied ? { scale: 0.98 } : {}}
+                  disabled={isOwner || hasApplied || isApplying}
+                  onClick={() => onApply(gig)}
+                  className={`w-full border-4 border-black py-5 rounded-[24px] font-black text-xl uppercase italic flex items-center justify-center gap-3 transition-all ${
+                    isOwner || hasApplied
+                      ? 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-[8px_8px_0px_#cbd5e1]'
+                      : 'bg-brand-red text-white cursor-pointer shadow-[10px_10px_0px_black]'
+                  }`}
+                >
+                  {actionLabel}
+                  {!isOwner && !hasApplied && <ArrowRight size={22} />}
+                </motion.button>
+              </div>
+            </div>
+          </div>
         </motion.div>
       </motion.div>
     </AnimatePresence>
@@ -452,6 +553,7 @@ const GigsPage = ({ setPage, isLoggedIn, onAuth, onLogout, currentPage, user }) 
   const [subscriptionPending, setSubscriptionPending] = useState(null); // { action: 'post' | 'apply', gig? }
   const [myApplications, setMyApplications] = useState([]);
   const [applyingGigId, setApplyingGigId] = useState(null);
+  const [selectedGig, setSelectedGig] = useState(null);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -539,6 +641,9 @@ const GigsPage = ({ setPage, isLoggedIn, onAuth, onLogout, currentPage, user }) 
   ];
 
   const filteredGigs = activeCategory === 'All' ? gigs : gigs.filter(g => g.category === activeCategory);
+  const selectedGigCategory = selectedGig
+    ? categories.find(c => c.name === selectedGig.category) || categories[0]
+    : categories[0];
 
   const formatTime = (dateString) => {
     const date = new Date(dateString);
@@ -556,6 +661,16 @@ const GigsPage = ({ setPage, isLoggedIn, onAuth, onLogout, currentPage, user }) 
 
       {/* MODALS */}
       <PostGigModal isOpen={showPostModal} onClose={() => setShowPostModal(false)} user={user} onPostSuccess={fetchGigs} categories={categories} />
+      <GigDetailsModal
+        gig={selectedGig}
+        catInfo={selectedGigCategory}
+        user={user}
+        myApplications={myApplications}
+        applyingGigId={applyingGigId}
+        onApply={handleApply}
+        onClose={() => setSelectedGig(null)}
+        formatTime={formatTime}
+      />
       <SubscriptionModal
         isOpen={showSubscriptionModal}
         onClose={() => { setShowSubscriptionModal(false); setSubscriptionPending(null); }}
@@ -565,15 +680,15 @@ const GigsPage = ({ setPage, isLoggedIn, onAuth, onLogout, currentPage, user }) 
         onPaymentSuccess={handleSubscriptionComplete}
       />
 
-      <div className="container" style={{ paddingTop: '130px' }}>
+      <div className="container" style={{ paddingTop: 'clamp(118px, 28vw, 150px)' }}>
 
         {/* Floating Category Pill Bar + Post Button */}
         <div style={{
           display: 'flex',
           justifyContent: 'center',
-          marginBottom: '4rem',
+          marginBottom: 'clamp(2rem, 8vw, 4rem)',
           position: 'sticky',
-          top: '110px',
+          top: 'clamp(92px, 22vw, 110px)',
           zIndex: 100
         }}>
           <div style={{
@@ -586,10 +701,11 @@ const GigsPage = ({ setPage, isLoggedIn, onAuth, onLogout, currentPage, user }) 
             alignItems: 'center',
             border: '1px solid rgba(0,0,0,0.05)',
             boxShadow: '0 10px 30px rgba(0,0,0,0.05)',
+            width: '100%',
             maxWidth: '100%',
-            overflow: 'hidden'
+            overflowX: 'auto'
           }}>
-            <div className="nav-links" style={{ display: 'flex', gap: '0.3rem', borderRight: '1px solid #eee', paddingRight: '0.5rem', marginRight: '0.2rem', background: 'transparent', border: 'none' }}>
+            <div className="nav-links no-scrollbar" style={{ display: 'flex', gap: '0.3rem', borderRight: '1px solid #eee', paddingRight: '0.5rem', marginRight: '0.2rem', background: 'transparent', border: 'none', overflowX: 'auto', flex: '1 1 auto' }}>
 
               {categories.map(cat => (
                 <motion.button
@@ -633,7 +749,7 @@ const GigsPage = ({ setPage, isLoggedIn, onAuth, onLogout, currentPage, user }) 
                 background: '#ef4444',
                 color: 'white',
                 border: 'none',
-                padding: '0.7rem 1.5rem',
+                padding: '0.7rem clamp(1rem, 4vw, 1.5rem)',
                 borderRadius: '100px',
                 fontWeight: '900',
                 fontSize: '0.9rem',
@@ -641,7 +757,8 @@ const GigsPage = ({ setPage, isLoggedIn, onAuth, onLogout, currentPage, user }) 
                 display: 'flex',
                 alignItems: 'center',
                 gap: '0.6rem',
-                boxShadow: '0 5px 15px rgba(239, 68, 68, 0.2)'
+                boxShadow: '0 5px 15px rgba(239, 68, 68, 0.2)',
+                whiteSpace: 'nowrap'
               }}
             >
               <Plus size={18} /> Post a Gig
@@ -650,7 +767,7 @@ const GigsPage = ({ setPage, isLoggedIn, onAuth, onLogout, currentPage, user }) 
         </div>
 
         {/* Dynamic Bento Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '2rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))', gap: 'clamp(1rem, 4vw, 2rem)' }}>
           {loading ? (
              <div className="col-span-full text-center py-20 font-black text-2xl text-slate-400 animate-pulse">Fetching the market...</div>
           ) : filteredGigs.length === 0 ? (
@@ -671,18 +788,20 @@ const GigsPage = ({ setPage, isLoggedIn, onAuth, onLogout, currentPage, user }) 
                     exit={{ opacity: 0, scale: 0.9 }}
                     transition={{ duration: 0.4, delay: i * 0.05 }}
                     whileHover={{ y: -10 }}
+                    onClick={() => setSelectedGig(gig)}
                     style={{
                       background: 'white',
                       border: '1px solid #eee',
                       borderRadius: '32px',
-                      padding: '2rem',
+                      padding: 'clamp(1.25rem, 5vw, 2rem)',
                       position: 'relative',
                       overflow: 'hidden',
                       boxShadow: `0 10px 40px rgba(0,0,0,0.02), inset 0 0 0 1px rgba(255,255,255,0.5)`,
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: 'space-between',
-                      minHeight: '280px'
+                      minHeight: '280px',
+                      cursor: 'pointer'
                     }}
                   >
                     {/* Category Glow */}
@@ -722,7 +841,7 @@ const GigsPage = ({ setPage, isLoggedIn, onAuth, onLogout, currentPage, user }) 
                       <p style={{ color: '#777', fontSize: '0.95rem', lineHeight: '1.5', fontWeight: '500' }}>{gig.description}</p>
                     </div>
 
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', position: 'relative', zIndex: 1, marginTop: '1.5rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', position: 'relative', zIndex: 1, marginTop: '1.5rem', gap: '1rem', flexWrap: 'wrap' }}>
                       <div>
                         <div style={{ fontSize: '0.8rem', color: '#aaa', fontWeight: '800', marginBottom: '0.2rem' }}>OFFER</div>
                         <div style={{ fontSize: '1.5rem', fontWeight: '900', letterSpacing: '-1px' }}>{gig.price}</div>
@@ -732,7 +851,7 @@ const GigsPage = ({ setPage, isLoggedIn, onAuth, onLogout, currentPage, user }) 
                         if (!user) {
                           return (
                             <motion.button
-                              onClick={() => handleApply(gig)}
+                              onClick={(e) => { e.stopPropagation(); handleApply(gig); }}
                               whileHover={{ scale: 1.05, background: '#000', color: '#fff' }}
                               style={{ background: 'transparent', border: '2.5px solid #000', padding: '0.7rem 1.5rem', borderRadius: '15px', fontWeight: '900', cursor: 'pointer', transition: 'all 0.2s' }}
                             >
@@ -746,7 +865,7 @@ const GigsPage = ({ setPage, isLoggedIn, onAuth, onLogout, currentPage, user }) 
                         
                         if (isOwner) {
                           return (
-                            <button style={{ background: '#f1f5f9', color: '#94a3b8', border: '2.5px solid #e2e8f0', padding: '0.7rem 1.5rem', borderRadius: '15px', fontWeight: '900', cursor: 'not-allowed' }}>
+                            <button onClick={(e) => e.stopPropagation()} style={{ background: '#f1f5f9', color: '#94a3b8', border: '2.5px solid #e2e8f0', padding: '0.7rem 1.5rem', borderRadius: '15px', fontWeight: '900', cursor: 'not-allowed' }}>
                               YOUR GIG
                             </button>
                           );
@@ -754,7 +873,7 @@ const GigsPage = ({ setPage, isLoggedIn, onAuth, onLogout, currentPage, user }) 
 
                         if (hasApplied) {
                           return (
-                            <button style={{ background: '#10b981', color: 'white', border: '2.5px solid #10b981', padding: '0.7rem 1.5rem', borderRadius: '15px', fontWeight: '900', cursor: 'default' }}>
+                            <button onClick={(e) => e.stopPropagation()} style={{ background: '#10b981', color: 'white', border: '2.5px solid #10b981', padding: '0.7rem 1.5rem', borderRadius: '15px', fontWeight: '900', cursor: 'default' }}>
                               APPLIED ✓
                             </button>
                           );
@@ -762,7 +881,7 @@ const GigsPage = ({ setPage, isLoggedIn, onAuth, onLogout, currentPage, user }) 
 
                         return (
                           <motion.button
-                            onClick={() => handleApply(gig)}
+                            onClick={(e) => { e.stopPropagation(); handleApply(gig); }}
                             disabled={applyingGigId === gig.id}
                             whileHover={{ scale: 1.05, background: '#000', color: '#fff' }}
                             style={{ background: 'transparent', border: '2.5px solid #000', padding: '0.7rem 1.5rem', borderRadius: '15px', fontWeight: '900', cursor: 'pointer', transition: 'all 0.2s', opacity: applyingGigId === gig.id ? 0.5 : 1 }}
@@ -913,8 +1032,8 @@ const SubscriptionPlansContent = ({ coupon, setCoupon, couponApplied, couponErro
             <div>
               <h3 style={{ fontSize: compact ? '1.35rem' : '2rem', fontWeight: '950', marginBottom: '0.5rem', textTransform: 'uppercase' }}>{plan.name}</h3>
               <p style={{ color: '#64748b', fontWeight: '700', fontSize: '0.9rem', marginBottom: '1.5rem' }}>{plan.desc}</p>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '1.5rem' }}>
-                <span style={{ fontSize: compact ? '3rem' : '4.5rem', fontWeight: '950', letterSpacing: '-3px' }}>₹{price}</span>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: compact ? 'clamp(2.5rem, 14vw, 3rem)' : 'clamp(3rem, 13vw, 4.5rem)', fontWeight: '950', letterSpacing: '-3px' }}>₹{price}</span>
                 {couponApplied && (
                   <span style={{ textDecoration: 'line-through', color: '#94a3b8', fontSize: compact ? '1.25rem' : '2rem', fontWeight: '700' }}>₹{originalPrice}</span>
                 )}
@@ -960,15 +1079,15 @@ const SubscriptionPlansContent = ({ coupon, setCoupon, couponApplied, couponErro
     <div style={{ display: 'flex', justifyContent: 'center', marginTop: '0.5rem' }}>
       <div style={{ background: 'white', border: '4px solid black', padding: '1.25rem 1.5rem', borderRadius: '24px', boxShadow: '8px 8px 0px black', width: '100%', maxWidth: '450px' }}>
         <p style={{ fontSize: '0.75rem', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#64748b', marginBottom: '0.75rem' }}>Have a coupon code?</p>
-        <form onSubmit={handleApplyCoupon} style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+        <form onSubmit={handleApplyCoupon} style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
           <input
             type="text"
             placeholder="Enter coupon code"
             value={coupon}
             onChange={e => setCoupon(e.target.value)}
-            style={{ flex: 1, border: '3px solid black', padding: '0.75rem 1rem', borderRadius: '12px', fontWeight: '800', outline: 'none' }}
+            style={{ flex: '1 1 180px', border: '3px solid black', padding: '0.75rem 1rem', borderRadius: '12px', fontWeight: '800', outline: 'none' }}
           />
-          <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} type="submit" style={{ background: 'black', color: 'white', border: 'none', padding: '0.75rem 1.5rem', borderRadius: '12px', fontWeight: '900', cursor: 'pointer' }}>
+          <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} type="submit" style={{ background: 'black', color: 'white', border: 'none', padding: '0.75rem 1.5rem', borderRadius: '12px', fontWeight: '900', cursor: 'pointer', flex: '1 1 110px' }}>
             APPLY
           </motion.button>
         </form>
@@ -1118,7 +1237,7 @@ const SubscriptionModal = ({ isOpen, onClose, user, isLoggedIn, onAuth, onPaymen
           initial={{ scale: 0.92, y: 24 }}
           animate={{ scale: 1, y: 0 }}
           exit={{ scale: 0.92, y: 24 }}
-          className="bg-[#f8fafc] border-[8px] border-black rounded-[40px] w-full max-w-[1100px] max-h-[90vh] overflow-y-auto p-6 md:p-10 shadow-[16px_16px_0px_rgba(0,0,0,1)] relative"
+          className="bg-[#f8fafc] border-[5px] sm:border-[8px] border-black rounded-[28px] sm:rounded-[40px] w-full max-w-[1100px] max-h-[90vh] overflow-y-auto p-5 sm:p-6 md:p-10 shadow-[8px_8px_0px_rgba(0,0,0,1)] sm:shadow-[16px_16px_0px_rgba(0,0,0,1)] relative"
           onClick={e => e.stopPropagation()}
         >
           <button onClick={onClose} className="absolute top-6 right-6 bg-white text-black p-2 rounded-xl border-[3px] border-black hover:bg-black hover:text-white transition-colors z-10">
@@ -1515,11 +1634,11 @@ const CareersPage = ({ setPage, isLoggedIn, onAuth, onLogout }) => {
             <motion.div variants={fadeInUp} whileHover={{ rotate: [-2, 2, -2], scale: 1.1 }} transition={{ type: 'spring', stiffness: 300 }} style={{ display: 'inline-block', background: '#bef264', color: 'black', border: '3px solid black', boxShadow: '4px 4px 0 rgba(0,0,0,1)', padding: '0.75rem 2rem', borderRadius: '999px', fontWeight: 'bold', fontSize: '1.25rem', marginBottom: '2rem', cursor: 'pointer' }}>
               We're Hiring (Desperately)
             </motion.div>
-            <motion.h1 variants={fadeInUp} style={{ fontSize: 'clamp(4rem, 10vw, 8rem)', lineHeight: 0.9, margin: '2rem 0', color: 'black', letterSpacing: '-0.06em', fontWeight: '900', textTransform: 'uppercase' }}>
+            <motion.h1 variants={fadeInUp} style={{ fontSize: 'clamp(3rem, 13vw, 8rem)', lineHeight: 0.9, margin: '2rem 0', color: 'black', letterSpacing: '-0.06em', fontWeight: '900', textTransform: 'uppercase' }}>
               Join our cult<br />
               <span style={{ color: '#ef4444', textShadow: '6px 6px 0px rgba(0,0,0,0.1)' }}>erm, team.</span>
             </motion.h1>
-            <motion.p variants={fadeInUp} style={{ fontSize: '1.5rem', color: '#334155', maxWidth: '750px', margin: '0 auto', lineHeight: 1.6, fontWeight: '500', border: '3px solid black', padding: '1.5rem', borderRadius: '16px', background: 'white', boxShadow: '8px 8px 0px black' }}>
+            <motion.p variants={fadeInUp} style={{ fontSize: 'clamp(1rem, 4vw, 1.5rem)', color: '#334155', maxWidth: '750px', margin: '0 auto', lineHeight: 1.6, fontWeight: '500', border: '3px solid black', padding: 'clamp(1rem, 4vw, 1.5rem)', borderRadius: '16px', background: 'white', boxShadow: '8px 8px 0px black' }}>
               We're disrupting the hyperlocal market by using enough buzzwords to secure our Series A. We need people who thrive in absolute chaos, write zero documentation, and exist exclusively on iced coffee.
             </motion.p>
           </motion.div>
@@ -1528,7 +1647,7 @@ const CareersPage = ({ setPage, isLoggedIn, onAuth, onLogout }) => {
 
       <section className="section" style={{ padding: '6rem 0' }}>
         <div className="container" style={{ position: 'relative', zIndex: 1 }}>
-          <h2 style={{ fontSize: '3.5rem', marginBottom: '4rem', fontWeight: '900', textAlign: 'center', letterSpacing: '-0.03em', textTransform: 'uppercase', color: 'black' }}>Our "Industry-Leading" Perks</h2>
+          <h2 style={{ fontSize: 'clamp(2.2rem, 10vw, 3.5rem)', marginBottom: '4rem', fontWeight: '900', textAlign: 'center', letterSpacing: '-0.03em', textTransform: 'uppercase', color: 'black' }}>Our "Industry-Leading" Perks</h2>
           <div className="grid-3" style={{ gap: '2rem' }}>
             <motion.div
               whileHover={{ y: -15, scale: 1.05, rotate: -3, boxShadow: '16px 16px 0px black' }}
@@ -1560,16 +1679,16 @@ const CareersPage = ({ setPage, isLoggedIn, onAuth, onLogout }) => {
 
       <section className="section" style={{ padding: '2rem 0 10rem' }}>
         <div className="container" style={{ position: 'relative', zIndex: 1 }}>
-          <h2 style={{ fontSize: '3.5rem', marginBottom: '4rem', color: 'black', fontWeight: '900', letterSpacing: '-0.03em', textTransform: 'uppercase' }}>Open Requisitions</h2>
+          <h2 style={{ fontSize: 'clamp(2.2rem, 10vw, 3.5rem)', marginBottom: '4rem', color: 'black', fontWeight: '900', letterSpacing: '-0.03em', textTransform: 'uppercase' }}>Open Requisitions</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
 
             <motion.div
               whileHover={{ scale: 1.03, x: 10, y: -5, boxShadow: '16px 16px 0px black' }}
               transition={{ type: 'spring', stiffness: 300, damping: 12 }}
-              style={{ background: '#a7f3d0', border: '4px solid black', padding: '2.5rem', borderRadius: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', boxShadow: '8px 8px 0px black', position: 'relative', overflow: 'hidden' }}>
+              style={{ background: '#a7f3d0', border: '4px solid black', padding: 'clamp(1.25rem, 5vw, 2.5rem)', borderRadius: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap', cursor: 'pointer', boxShadow: '8px 8px 0px black', position: 'relative', overflow: 'hidden' }}>
               <div>
-                <h3 style={{ fontSize: '2.25rem', marginBottom: '0.75rem', color: 'black', fontWeight: '900' }}>Senior Stack Overflow Specialist <br /><span style={{ fontSize: '1.125rem', color: '#1e293b', fontWeight: 'bold' }}>aka Frontend Developer</span></h3>
-                <p style={{ color: 'black', margin: 0, fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: '600' }}><MapPin size={24} color="black" /> Remote • Must know how to center a div without crying.</p>
+                <h3 style={{ fontSize: 'clamp(1.5rem, 7vw, 2.25rem)', marginBottom: '0.75rem', color: 'black', fontWeight: '900' }}>Senior Stack Overflow Specialist <br /><span style={{ fontSize: '1.125rem', color: '#1e293b', fontWeight: 'bold' }}>aka Frontend Developer</span></h3>
+                <p style={{ color: 'black', margin: 0, fontSize: 'clamp(1rem, 4vw, 1.25rem)', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', fontWeight: '600' }}><MapPin size={24} color="black" /> Remote • Must know how to center a div without crying.</p>
               </div>
               <motion.div whileHover={{ rotate: 45, scale: 1.2 }} transition={{ type: 'spring' }} style={{ background: 'white', padding: '1.25rem', border: '3px solid black', borderRadius: '50%', color: 'black', boxShadow: '4px 4px 0px black' }}>
                 <ArrowRight size={36} strokeWidth={3} />
@@ -1579,10 +1698,10 @@ const CareersPage = ({ setPage, isLoggedIn, onAuth, onLogout }) => {
             <motion.div
               whileHover={{ scale: 1.03, x: -10, y: -5, boxShadow: '-16px 16px 0px black' }}
               transition={{ type: 'spring', stiffness: 300, damping: 12 }}
-              style={{ background: '#ddd6fe', border: '4px solid black', padding: '2.5rem', borderRadius: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', boxShadow: '-8px 8px 0px black', position: 'relative', overflow: 'hidden' }}>
+              style={{ background: '#ddd6fe', border: '4px solid black', padding: 'clamp(1.25rem, 5vw, 2.5rem)', borderRadius: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap', cursor: 'pointer', boxShadow: '-8px 8px 0px black', position: 'relative', overflow: 'hidden' }}>
               <div>
-                <h3 style={{ fontSize: '2.25rem', marginBottom: '0.75rem', color: 'black', fontWeight: '900' }}>Professional Scope Creeper <br /><span style={{ fontSize: '1.125rem', color: '#1e293b', fontWeight: 'bold' }}>aka Product Manager</span></h3>
-                <p style={{ color: 'black', margin: 0, fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: '600' }}><MapPin size={24} color="black" /> Nagpur HQ • Expertise in scheduling meetings that could've been emails.</p>
+                <h3 style={{ fontSize: 'clamp(1.5rem, 7vw, 2.25rem)', marginBottom: '0.75rem', color: 'black', fontWeight: '900' }}>Professional Scope Creeper <br /><span style={{ fontSize: '1.125rem', color: '#1e293b', fontWeight: 'bold' }}>aka Product Manager</span></h3>
+                <p style={{ color: 'black', margin: 0, fontSize: 'clamp(1rem, 4vw, 1.25rem)', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', fontWeight: '600' }}><MapPin size={24} color="black" /> Nagpur HQ • Expertise in scheduling meetings that could've been emails.</p>
               </div>
               <motion.div whileHover={{ rotate: -45, scale: 1.2 }} transition={{ type: 'spring' }} style={{ background: 'white', padding: '1.25rem', border: '3px solid black', borderRadius: '50%', color: 'black', boxShadow: '-4px 4px 0px black' }}>
                 <ArrowRight size={36} strokeWidth={3} />
@@ -1592,10 +1711,10 @@ const CareersPage = ({ setPage, isLoggedIn, onAuth, onLogout }) => {
             <motion.div
               whileHover={{ scale: 1.03, x: 10, y: -5, boxShadow: '16px 16px 0px black' }}
               transition={{ type: 'spring', stiffness: 300, damping: 12 }}
-              style={{ background: '#fbcfe8', border: '4px solid black', padding: '2.5rem', borderRadius: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', boxShadow: '8px 8px 0px black', position: 'relative', overflow: 'hidden' }}>
+              style={{ background: '#fbcfe8', border: '4px solid black', padding: 'clamp(1.25rem, 5vw, 2.5rem)', borderRadius: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap', cursor: 'pointer', boxShadow: '8px 8px 0px black', position: 'relative', overflow: 'hidden' }}>
               <div>
-                <h3 style={{ fontSize: '2.25rem', marginBottom: '0.75rem', color: 'black', fontWeight: '900' }}>Ghost Protocol Architect <br /><span style={{ fontSize: '1.125rem', color: '#1e293b', fontWeight: 'bold' }}>aka Backend Engineer</span></h3>
-                <p style={{ color: 'black', margin: 0, fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: '600' }}><MapPin size={24} color="black" /> Remote • Building APIs nobody asked for and blaming the frontend for latency.</p>
+                <h3 style={{ fontSize: 'clamp(1.5rem, 7vw, 2.25rem)', marginBottom: '0.75rem', color: 'black', fontWeight: '900' }}>Ghost Protocol Architect <br /><span style={{ fontSize: '1.125rem', color: '#1e293b', fontWeight: 'bold' }}>aka Backend Engineer</span></h3>
+                <p style={{ color: 'black', margin: 0, fontSize: 'clamp(1rem, 4vw, 1.25rem)', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', fontWeight: '600' }}><MapPin size={24} color="black" /> Remote • Building APIs nobody asked for and blaming the frontend for latency.</p>
               </div>
               <motion.div whileHover={{ rotate: 135, scale: 1.2 }} transition={{ type: 'spring' }} style={{ background: 'white', padding: '1.25rem', border: '3px solid black', borderRadius: '50%', color: 'black', boxShadow: '4px 4px 0px black' }}>
                 <ArrowRight size={36} strokeWidth={3} />
@@ -1662,11 +1781,11 @@ const EventsPage = ({ setPage, isLoggedIn, onAuth, onLogout }) => {
             <motion.div variants={fadeInUp} whileHover={{ rotate: [-2, 2, -2], scale: 1.1 }} transition={{ type: 'spring', stiffness: 300 }} style={{ display: 'inline-block', background: '#34d399', color: 'black', border: '3px solid black', boxShadow: '4px 4px 0 rgba(0,0,0,1)', padding: '0.75rem 2rem', borderRadius: '999px', fontWeight: 'bold', fontSize: '1.25rem', marginBottom: '2rem', cursor: 'pointer', textTransform: 'uppercase' }}>
               Happening Now
             </motion.div>
-            <motion.h1 variants={fadeInUp} style={{ fontSize: 'clamp(4rem, 10vw, 8rem)', lineHeight: 0.9, margin: '2rem 0', color: 'black', letterSpacing: '-0.06em', fontWeight: '900', textTransform: 'uppercase' }}>
+            <motion.h1 variants={fadeInUp} style={{ fontSize: 'clamp(3rem, 13vw, 8rem)', lineHeight: 0.9, margin: '2rem 0', color: 'black', letterSpacing: '-0.06em', fontWeight: '900', textTransform: 'uppercase' }}>
               Local <br />
               <span style={{ color: '#10b981', textShadow: '6px 6px 0px rgba(0,0,0,0.1)' }}>Fixtures.</span>
             </motion.h1>
-            <motion.p variants={fadeInUp} style={{ fontSize: '1.5rem', color: '#334155', maxWidth: '750px', margin: '0 auto', lineHeight: 1.6, fontWeight: '500', border: '3px solid black', padding: '1.5rem', borderRadius: '16px', background: 'white', boxShadow: '8px 8px 0px black' }}>
+            <motion.p variants={fadeInUp} style={{ fontSize: 'clamp(1rem, 4vw, 1.5rem)', color: '#334155', maxWidth: '750px', margin: '0 auto', lineHeight: 1.6, fontWeight: '500', border: '3px solid black', padding: 'clamp(1rem, 4vw, 1.5rem)', borderRadius: '16px', background: 'white', boxShadow: '8px 8px 0px black' }}>
               Skip the algorithm. Find out where people actually exist in real life. Underground meetups, founder coffees, and warehouse raves.
             </motion.p>
           </motion.div>
@@ -1680,7 +1799,7 @@ const EventsPage = ({ setPage, isLoggedIn, onAuth, onLogout }) => {
           <motion.div
             whileHover={{ scale: 1.02, x: 10, y: -10, boxShadow: '30px 30px 0px #10b981' }}
             transition={{ type: 'spring', stiffness: 300, damping: 15 }}
-            style={{ background: '#fcd34d', border: '6px solid black', borderRadius: '32px', display: 'flex', flexDirection: 'column', overflow: 'hidden', cursor: 'pointer', boxShadow: '20px 20px 0px black', minHeight: '600px' }}>
+            style={{ background: '#fcd34d', border: '6px solid black', borderRadius: '32px', display: 'flex', flexDirection: 'column', overflow: 'hidden', cursor: 'pointer', boxShadow: 'clamp(8px, 3vw, 20px) clamp(8px, 3vw, 20px) 0px black', minHeight: 'clamp(0px, 90vw, 600px)' }}>
 
             <div style={{ background: 'black', color: 'white', padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -1691,29 +1810,29 @@ const EventsPage = ({ setPage, isLoggedIn, onAuth, onLogout }) => {
             </div>
 
             <div style={{ display: 'flex', flex: 1, flexWrap: 'wrap' }}>
-              <div style={{ flex: '1.5', padding: '4rem', display: 'flex', flexDirection: 'column', justifyContent: 'center', borderRight: '6px solid black', minWidth: '350px' }}>
+              <div style={{ flex: '1 1 320px', padding: 'clamp(1.5rem, 7vw, 4rem)', display: 'flex', flexDirection: 'column', justifyContent: 'center', borderRight: '6px solid black', minWidth: 0 }}>
                 <div style={{ background: 'white', color: 'black', border: '4px solid black', padding: '0.5rem 1.5rem', borderRadius: '12px', fontWeight: '900', textTransform: 'uppercase', width: 'fit-content', marginBottom: '2rem', boxShadow: '6px 6px 0px black', fontSize: '1.25rem' }}>🔥 THE MAIN STAGE</div>
 
                 <h3 style={{ fontSize: 'clamp(3rem, 8vw, 6rem)', marginBottom: '1.5rem', color: 'black', fontWeight: '900', lineHeight: 0.85, letterSpacing: '-0.04em' }}>FOUNDERS <br /><span style={{ color: '#ef4444' }}>ARENA.</span></h3>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginTop: '2rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', fontSize: '1.75rem', fontWeight: '800' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', fontSize: 'clamp(1.1rem, 5vw, 1.75rem)', fontWeight: '800' }}>
                     <span style={{ fontSize: '2.5rem' }}>⏰</span> Coming Soon
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', fontSize: '1.75rem', fontWeight: '800' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', fontSize: 'clamp(1.1rem, 5vw, 1.75rem)', fontWeight: '800' }}>
                     <span style={{ fontSize: '2.5rem' }}>📍</span> Coming Soon
                   </div>
                 </div>
 
-                <p style={{ color: 'black', fontSize: '1.5rem', fontWeight: '600', marginTop: '3rem', lineHeight: 1.4, maxWidth: '500px' }}>
+                <p style={{ color: 'black', fontSize: 'clamp(1rem, 4vw, 1.5rem)', fontWeight: '600', marginTop: '3rem', lineHeight: 1.4, maxWidth: '500px' }}>
                   3 Minutes. 2 Founders. High stakes roasting by esteemed judges. No slides, no mercy. Survive the fire and get funded.
                 </p>
               </div>
 
-              <div style={{ flex: '1', background: '#f472b6', padding: '4rem', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', minWidth: '300px' }}>
+              <div style={{ flex: '1 1 280px', background: '#f472b6', padding: 'clamp(1.5rem, 7vw, 4rem)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', minWidth: 0 }}>
                 <div style={{ background: 'white', border: '4px solid black', padding: '2rem', borderRadius: '24px', boxShadow: '12px 12px 0px black', transform: 'rotate(5deg)' }}>
                   <span style={{ display: 'block', fontSize: '1.25rem', fontWeight: '900', color: '#64748b', marginBottom: '0.5rem' }}>ENTRY FEE</span>
-                  <h2 style={{ fontSize: '5rem', color: 'black', fontWeight: '900', lineHeight: 1, margin: 0 }}>₹1200</h2>
+                  <h2 style={{ fontSize: 'clamp(3rem, 16vw, 5rem)', color: 'black', fontWeight: '900', lineHeight: 1, margin: 0 }}>₹1200</h2>
                 </div>
 
                 <div style={{ marginTop: '4rem', display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
@@ -1721,13 +1840,13 @@ const EventsPage = ({ setPage, isLoggedIn, onAuth, onLogout }) => {
                     onClick={handleRegisterClick}
                     whileHover={{ scale: 1.05, rotate: -2, boxShadow: '0px 10px 0px black' }}
                     whileTap={{ scale: 0.95 }}
-                    style={{ background: 'black', color: 'white', border: '4px solid black', padding: '1.5rem 3rem', borderRadius: '16px', fontSize: '2rem', fontWeight: '900', cursor: 'pointer', textTransform: 'uppercase', width: '100%' }}>
+                    style={{ background: 'black', color: 'white', border: '4px solid black', padding: '1.25rem clamp(1rem, 6vw, 3rem)', borderRadius: '16px', fontSize: 'clamp(1.25rem, 6vw, 2rem)', fontWeight: '900', cursor: 'pointer', textTransform: 'uppercase', width: '100%' }}>
                     GRAB A SLOT 🚀
                   </motion.button>
                   <p style={{ fontWeight: '800', fontSize: '1.125rem', color: 'black', opacity: 0.7 }}>Limited to 50 Teams Only</p>
                 </div>
 
-                <div style={{ marginTop: '3rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <div style={{ marginTop: '3rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
                   <div style={{ display: 'flex', marginLeft: '0.5rem' }}>
                     {[1, 2, 3, 4].map(i => (
                       <div key={i} style={{ width: '45px', height: '45px', background: `hsl(${i * 45}, 70%, 60%)`, border: '3px solid black', borderRadius: '50%', marginLeft: '-15px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>👤</div>
@@ -1969,7 +2088,7 @@ const PitchFireRegistration = ({ setPage, user }) => {
       <AnimatePresence>
         {loading && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.9)', zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ repeat: Infinity, duration: 1 }} style={{ background: '#fcd34d', color: 'black', padding: '2rem 4rem', borderRadius: '24px', border: '6px solid black', fontWeight: '900', fontSize: '2rem', boxShadow: '15px 15px 0px #ef4444', textAlign: 'center' }}>
+            <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ repeat: Infinity, duration: 1 }} style={{ background: '#fcd34d', color: 'black', padding: 'clamp(1.25rem, 6vw, 2rem) clamp(1.5rem, 8vw, 4rem)', borderRadius: '24px', border: '6px solid black', fontWeight: '900', fontSize: 'clamp(1.25rem, 6vw, 2rem)', boxShadow: '15px 15px 0px #ef4444', textAlign: 'center', maxWidth: '90vw' }}>
               {loading}
             </motion.div>
           </motion.div>
@@ -1987,7 +2106,7 @@ const PitchFireRegistration = ({ setPage, user }) => {
 
         <AnimatePresence mode="wait">
           {step === 1 && (
-            <motion.div key="step1" initial={{ x: 50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -50, opacity: 0 }} style={{ background: '#f8fafc', border: '6px solid black', padding: '3.5rem', borderRadius: '32px', boxShadow: '20px 20px 0px black' }}>
+            <motion.div key="step1" initial={{ x: 50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -50, opacity: 0 }} style={{ background: '#f8fafc', border: '6px solid black', padding: 'clamp(1.25rem, 7vw, 3.5rem)', borderRadius: '32px', boxShadow: 'clamp(8px, 4vw, 20px) clamp(8px, 4vw, 20px) 0px black' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2.5rem' }}>
                 <h2 style={{ fontSize: '3rem', fontWeight: '900', textTransform: 'uppercase', lineHeight: 1 }}>TEAM <br /><span style={{ color: '#ef4444' }}>SETUP.</span></h2>
                 <div style={{ fontSize: '3rem' }}>🚀</div>
@@ -1998,7 +2117,7 @@ const PitchFireRegistration = ({ setPage, user }) => {
                   <label style={labelStyle}>Company / Team Name</label>
                   <input required placeholder="eg. Ghost Protocol" value={teamData.teamName} onChange={e => setTeamData({ ...teamData, teamName: e.target.value })} style={inputStyle} />
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: '1.5rem' }}>
                   <div>
                     <label style={labelStyle}>Founder 1</label>
                     <input required placeholder="Name" value={teamData.member1} onChange={e => setTeamData({ ...teamData, member1: e.target.value })} style={inputStyle} />
@@ -2012,13 +2131,13 @@ const PitchFireRegistration = ({ setPage, user }) => {
                   <label style={labelStyle}>The Pitch (One sentence roast)</label>
                   <textarea required rows={3} placeholder="We solve problems that don't exist..." value={teamData.idea} onChange={e => setTeamData({ ...teamData, idea: e.target.value })} style={{ ...inputStyle, resize: 'none' }} />
                 </div>
-                <motion.button whileHover={{ scale: 1.02, y: -5, boxShadow: '0px 10px 0px black' }} whileTap={{ scale: 0.98 }} type="submit" style={{ background: 'black', color: 'white', border: '4px solid black', padding: '1.5rem', borderRadius: '16px', fontWeight: '900', fontSize: '1.5rem', cursor: 'pointer', marginTop: '1rem', textTransform: 'uppercase' }}>Continue to Verify →</motion.button>
+                <motion.button whileHover={{ scale: 1.02, y: -5, boxShadow: '0px 10px 0px black' }} whileTap={{ scale: 0.98 }} type="submit" style={{ background: 'black', color: 'white', border: '4px solid black', padding: '1.25rem', borderRadius: '16px', fontWeight: '900', fontSize: 'clamp(1.1rem, 5vw, 1.5rem)', cursor: 'pointer', marginTop: '1rem', textTransform: 'uppercase' }}>Continue to Verify →</motion.button>
               </form>
             </motion.div>
           )}
 
           {step === 2 && (
-            <motion.div key="step2" initial={{ x: 50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -50, opacity: 0 }} style={{ background: '#f8fafc', border: '6px solid black', padding: '3.5rem', borderRadius: '32px', boxShadow: '20px 20px 0px black' }}>
+            <motion.div key="step2" initial={{ x: 50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -50, opacity: 0 }} style={{ background: '#f8fafc', border: '6px solid black', padding: 'clamp(1.25rem, 7vw, 3.5rem)', borderRadius: '32px', boxShadow: 'clamp(8px, 4vw, 20px) clamp(8px, 4vw, 20px) 0px black' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2.5rem' }}>
                 <h2 style={{ fontSize: '3rem', fontWeight: '900', textTransform: 'uppercase', lineHeight: 1 }}>EMAIL <br /><span style={{ color: '#3b82f6' }}>AUTH.</span></h2>
                 <div style={{ fontSize: '3rem' }}>🔒</div>
@@ -2031,16 +2150,16 @@ const PitchFireRegistration = ({ setPage, user }) => {
                     <input required type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@startup.com" style={inputStyle} />
                     <p style={{ marginTop: '1rem', fontWeight: '700', color: '#64748b' }}>We'll send your digital ticket here.</p>
                   </div>
-                  <motion.button whileHover={{ scale: 1.02, y: -5 }} whileTap={{ scale: 0.98 }} type="submit" style={{ background: '#3b82f6', color: 'white', border: '4px solid black', padding: '1.5rem', borderRadius: '16px', fontWeight: '900', fontSize: '1.5rem', boxShadow: '6px 6px 0px black', cursor: 'pointer', textTransform: 'uppercase' }}>Request PIN</motion.button>
+                  <motion.button whileHover={{ scale: 1.02, y: -5 }} whileTap={{ scale: 0.98 }} type="submit" style={{ background: '#3b82f6', color: 'white', border: '4px solid black', padding: '1.25rem', borderRadius: '16px', fontWeight: '900', fontSize: 'clamp(1.1rem, 5vw, 1.5rem)', boxShadow: '6px 6px 0px black', cursor: 'pointer', textTransform: 'uppercase' }}>Request PIN</motion.button>
                 </form>
               ) : (
                 <form onSubmit={verifyOtp} style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
                   <div>
                     <label style={labelStyle}>6-Digit PIN</label>
-                    <input required type="text" maxLength={6} value={otp} onChange={e => setOtp(e.target.value)} style={{ ...inputStyle, fontSize: '3rem', textAlign: 'center', letterSpacing: '0.75rem', background: '#fef9c3' }} />
+                    <input required type="text" maxLength={6} value={otp} onChange={e => setOtp(e.target.value)} style={{ ...inputStyle, fontSize: 'clamp(2rem, 11vw, 3rem)', textAlign: 'center', letterSpacing: 'clamp(0.25rem, 2vw, 0.75rem)', background: '#fef9c3' }} />
                     <p style={{ marginTop: '1rem', fontWeight: '700', color: '#ef4444' }}>Expiring in 2 minutes!</p>
                   </div>
-                  <motion.button whileHover={{ scale: 1.02, y: -5 }} whileTap={{ scale: 0.98 }} type="submit" style={{ background: '#34d399', color: 'black', border: '4px solid black', padding: '1.5rem', borderRadius: '16px', fontWeight: '900', fontSize: '1.5rem', boxShadow: '6px 6px 0px black', cursor: 'pointer', textTransform: 'uppercase' }}>Confirm Identity</motion.button>
+                  <motion.button whileHover={{ scale: 1.02, y: -5 }} whileTap={{ scale: 0.98 }} type="submit" style={{ background: '#34d399', color: 'black', border: '4px solid black', padding: '1.25rem', borderRadius: '16px', fontWeight: '900', fontSize: 'clamp(1.1rem, 5vw, 1.5rem)', boxShadow: '6px 6px 0px black', cursor: 'pointer', textTransform: 'uppercase' }}>Confirm Identity</motion.button>
                   <p onClick={() => setOtpSent(false)} style={{ textAlign: 'center', fontWeight: '900', cursor: 'pointer', textDecoration: 'underline' }}>Resend code?</p>
                 </form>
               )}
@@ -2050,14 +2169,14 @@ const PitchFireRegistration = ({ setPage, user }) => {
           {step === 3 && (
             <motion.div key="step3" initial={{ x: 50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -50, opacity: 0 }} style={{ background: '#f8fafc', border: '6px solid black', padding: 'clamp(1.5rem, 8vw, 3.5rem)', borderRadius: '24px', boxShadow: '10px 10px 0px black', textAlign: 'center' }}>
               <h2 style={{ fontSize: 'clamp(2rem, 10vw, 3rem)', fontWeight: '900', textTransform: 'uppercase', marginBottom: '1rem' }}>GET <span style={{ color: '#a78bfa' }}>ENTRY.</span></h2>
-              <p style={{ fontWeight: '800', fontSize: '1.5rem', marginBottom: '2.5rem' }}>Scan the QR to secure your team slot.</p>
+              <p style={{ fontWeight: '800', fontSize: 'clamp(1rem, 5vw, 1.5rem)', marginBottom: '2.5rem' }}>Scan the QR to secure your team slot.</p>
 
               <div style={{ background: 'white', padding: '2rem', display: 'inline-block', borderRadius: '24px', border: '5px solid black', marginBottom: '2.5rem', boxShadow: '12px 12px 0px rgba(167,139,250,0.3)' }}>
                 <div style={{ width: '220px', height: '220px', background: 'white', backgroundImage: 'url("https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=upi://pay?pa=mock@upi&pn=Bartr&am=1200.00&tr=mock-txn")', backgroundSize: 'cover' }}></div>
                 <div style={{ marginTop: '1.5rem', fontSize: '2.5rem', fontWeight: '900' }}>₹1200</div>
               </div>
 
-              <motion.button onClick={processPayment} whileHover={{ scale: 1.02, y: -5 }} whileTap={{ scale: 0.98 }} style={{ width: '100%', background: '#a78bfa', color: 'black', border: '4px solid black', padding: '1.5rem', borderRadius: '16px', fontWeight: '900', fontSize: '1.5rem', boxShadow: '8px 8px 0px black', cursor: 'pointer', textTransform: 'uppercase' }}>I've Paid! Generate Ticket</motion.button>
+              <motion.button onClick={processPayment} whileHover={{ scale: 1.02, y: -5 }} whileTap={{ scale: 0.98 }} style={{ width: '100%', background: '#a78bfa', color: 'black', border: '4px solid black', padding: '1.25rem', borderRadius: '16px', fontWeight: '900', fontSize: 'clamp(1.1rem, 5vw, 1.5rem)', boxShadow: '8px 8px 0px black', cursor: 'pointer', textTransform: 'uppercase' }}>I've Paid! Generate Ticket</motion.button>
             </motion.div>
           )}
 
@@ -2068,7 +2187,7 @@ const PitchFireRegistration = ({ setPage, user }) => {
                 <p style={{ fontWeight: '900', fontSize: '1.2rem', marginTop: '1rem', textTransform: 'uppercase' }}>You are officially in the fire.</p>
               </div>
               <div style={{ padding: 'clamp(1.5rem, 8vw, 4rem)', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: '2rem' }}>
                   <div style={{ background: '#f1f5f9', padding: '1.5rem', borderRadius: '16px', border: '3px solid black' }}>
                     <span style={{ color: '#64748b', fontWeight: '900', fontSize: '0.9rem', textTransform: 'uppercase' }}>TEAM</span>
                     <div style={{ fontSize: '1.75rem', fontWeight: '900', color: 'black' }}>{teamData.teamName}</div>
@@ -2083,7 +2202,7 @@ const PitchFireRegistration = ({ setPage, user }) => {
                   <div style={{ fontSize: '2.5rem', fontWeight: '900', letterSpacing: '0.2em' }}>{ticketId}</div>
                 </div>
                 <p style={{ textAlign: 'center', fontWeight: '800', fontSize: '1.1rem', color: '#64748b' }}>A confirmation has been sent to {email}. <br />Bring this ID to Aromas Cafe & Bistro.</p>
-                <motion.button onClick={() => setPage('events')} whileHover={{ scale: 1.05, y: -5 }} whileTap={{ scale: 0.95 }} style={{ width: '100%', background: 'black', color: 'white', border: '4px solid black', padding: '1.5rem', borderRadius: '16px', fontWeight: '900', fontSize: '1.5rem', marginTop: '1rem', cursor: 'pointer', textTransform: 'uppercase' }}>Back to Site</motion.button>
+                <motion.button onClick={() => setPage('events')} whileHover={{ scale: 1.05, y: -5 }} whileTap={{ scale: 0.95 }} style={{ width: '100%', background: 'black', color: 'white', border: '4px solid black', padding: '1.25rem', borderRadius: '16px', fontWeight: '900', fontSize: 'clamp(1.1rem, 5vw, 1.5rem)', marginTop: '1rem', cursor: 'pointer', textTransform: 'uppercase' }}>Back to Site</motion.button>
               </div>
             </motion.div>
           )}
@@ -2570,8 +2689,8 @@ const UserProfile = ({ setPage, user }) => {
 
       <div className="container" style={{ maxWidth: '800px', margin: '0 auto', paddingTop: '150px', position: 'relative', zIndex: 10 }}>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-          <h1 style={{ fontSize: '3rem', fontWeight: '900', textTransform: 'uppercase', margin: 0 }}>My Profile</h1>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', marginBottom: '2rem' }}>
+          <h1 style={{ fontSize: 'clamp(2.25rem, 10vw, 3rem)', fontWeight: '900', textTransform: 'uppercase', margin: 0 }}>My Profile</h1>
           {!isEditing && (
             <motion.button
               onClick={() => setIsEditing(true)}
@@ -2584,7 +2703,7 @@ const UserProfile = ({ setPage, user }) => {
           )}
         </div>
 
-        <div style={{ background: 'white', border: '6px solid black', borderRadius: '24px', padding: '3rem', boxShadow: '20px 20px 0px black', position: 'relative' }}>
+        <div style={{ background: 'white', border: '6px solid black', borderRadius: '24px', padding: 'clamp(1.25rem, 6vw, 3rem)', boxShadow: 'clamp(8px, 4vw, 20px) clamp(8px, 4vw, 20px) 0px black', position: 'relative' }}>
 
           <div style={{ position: 'absolute', top: '-40px', left: '3rem', width: '120px', height: '120px', borderRadius: '50%', background: '#3b82f6', border: '6px solid black', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '8px 8px 0px black' }}>
             <User size={60} color="white" />
@@ -2614,7 +2733,7 @@ const UserProfile = ({ setPage, user }) => {
                   <input placeholder="React, Graphic Design, Sales..." value={profile.skills} onChange={e => setProfile({ ...profile, skills: e.target.value })} style={{ width: '100%', padding: '1rem', border: '3px solid black', borderRadius: '12px', fontWeight: 'bold', fontSize: '1.1rem' }} />
                 </div>
 
-                <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem', flexWrap: 'wrap' }}>
                   <motion.button type="button" onClick={() => setIsEditing(false)} whileHover={{ scale: 1.05 }} style={{ flex: 1, background: '#f1f5f9', border: '3px solid black', padding: '1rem', borderRadius: '12px', fontWeight: '900', cursor: 'pointer' }}>CANCEL</motion.button>
                   <motion.button type="submit" whileHover={{ scale: 1.05 }} style={{ flex: 2, background: '#34d399', color: 'black', border: '3px solid black', padding: '1rem', borderRadius: '12px', fontWeight: '900', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
                     <Save size={20} /> SAVE PROFILE
@@ -2624,8 +2743,8 @@ const UserProfile = ({ setPage, user }) => {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
                 <div>
-                  <h2 style={{ fontSize: '2.5rem', fontWeight: '900', margin: 0, textTransform: 'uppercase' }}>{profile.full_name || 'Anonymous User'}</h2>
-                  <p style={{ fontSize: '1.25rem', color: '#64748b', fontWeight: 'bold', margin: '0.5rem 0 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <h2 style={{ fontSize: 'clamp(2rem, 9vw, 2.5rem)', fontWeight: '900', margin: 0, textTransform: 'uppercase', overflowWrap: 'anywhere' }}>{profile.full_name || 'Anonymous User'}</h2>
+                  <p style={{ fontSize: 'clamp(1rem, 4vw, 1.25rem)', color: '#64748b', fontWeight: 'bold', margin: '0.5rem 0 0', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', overflowWrap: 'anywhere' }}>
                     <Mail size={20} /> {user.email}
                   </p>
                 </div>
@@ -2750,11 +2869,11 @@ const AuthModal = ({ isOpen, initialMode, onClose }) => {
           initial={{ scale: 0.9, y: 30, rotate: -1 }}
           animate={{ scale: 1, y: 0, rotate: 0 }}
           exit={{ scale: 0.9, y: 30 }}
-          className="bg-white border-[8px] border-black rounded-[40px] w-full max-w-[650px] relative overflow-hidden shadow-[16px_16px_0px_rgba(0,0,0,1)]"
+          className="bg-white border-[5px] sm:border-[8px] border-black rounded-[28px] sm:rounded-[40px] w-full max-w-[650px] max-h-[92vh] relative overflow-y-auto shadow-[8px_8px_0px_rgba(0,0,0,1)] sm:shadow-[16px_16px_0px_rgba(0,0,0,1)]"
           onClick={e => e.stopPropagation()}
         >
           {showSuccess ? (
-            <div className="p-12 text-center">
+            <div className="p-6 sm:p-12 text-center">
               <motion.div
                 animate={{ scale: [1, 1.2, 1], rotate: [0, 10, -10, 0] }}
                 transition={{ repeat: Infinity, duration: 2 }}
@@ -2776,7 +2895,7 @@ const AuthModal = ({ isOpen, initialMode, onClose }) => {
           ) : (
             <>
               {/* Vibrant Header */}
-              <div className={`p-8 border-b-[6px] border-black relative transition-colors duration-500 ${isLogin ? 'bg-indigo-500' : 'bg-rose-500'}`}>
+              <div className={`p-5 sm:p-8 border-b-[5px] sm:border-b-[6px] border-black relative transition-colors duration-500 ${isLogin ? 'bg-indigo-500' : 'bg-rose-500'}`}>
                 <motion.div
                   whileHover={{ scale: 1.1, rotate: 2 }}
                   className="bg-white border-4 border-black px-4 py-1.5 rounded-xl shadow-[6px_6px_0px_black] w-fit mb-6"
@@ -2784,7 +2903,7 @@ const AuthModal = ({ isOpen, initialMode, onClose }) => {
                   <span className="text-black text-xl font-black tracking-tight font-['Space_Grotesk'] italic">Bartr.in</span>
                 </motion.div>
 
-                <h2 className="text-5xl font-black text-white uppercase italic tracking-tighter leading-[0.8] mb-2">
+                <h2 className="text-3xl sm:text-5xl font-black text-white uppercase italic tracking-tighter leading-[0.85] mb-2 pr-12">
                   {isLogin ? 'Welcome Back, Legend' : 'Join the Hustle'}
                 </h2>
                 <p className="text-white font-black opacity-90 uppercase tracking-widest text-xs">
@@ -2794,13 +2913,13 @@ const AuthModal = ({ isOpen, initialMode, onClose }) => {
                 <motion.button
                   whileHover={{ rotate: 90, scale: 1.1 }}
                   onClick={onClose}
-                  className="absolute top-6 right-6 bg-black text-white p-2 rounded-xl border-4 border-white shadow-lg"
+                  className="absolute top-4 right-4 sm:top-6 sm:right-6 bg-black text-white p-2 rounded-xl border-4 border-white shadow-lg"
                 >
                   <X size={20} strokeWidth={3} />
                 </motion.button>
               </div>
 
-              <div className="p-8 md:p-10 space-y-6">
+              <div className="p-5 sm:p-8 md:p-10 space-y-6">
                 {error && (
                   <div className="bg-rose-100 border-4 border-rose-500 p-4 rounded-xl flex items-center gap-3 animate-shake">
                     <AlertCircle className="text-rose-600" />
@@ -2887,7 +3006,7 @@ const AuthModal = ({ isOpen, initialMode, onClose }) => {
                     disabled={loading}
                     whileHover={{ scale: 1.02, y: -4 }}
                     whileTap={{ scale: 0.98, y: 0 }}
-                    className={`w-full py-5 rounded-2xl font-black text-2xl border-4 border-black shadow-[8px_8px_0px_black] uppercase italic tracking-widest transition-all ${loading ? 'opacity-50 cursor-not-allowed' : 'bg-black text-white hover:bg-slate-900'}`}
+                    className={`w-full py-4 sm:py-5 rounded-2xl font-black text-xl sm:text-2xl border-4 border-black shadow-[6px_6px_0px_black] sm:shadow-[8px_8px_0px_black] uppercase italic tracking-widest transition-all ${loading ? 'opacity-50 cursor-not-allowed' : 'bg-black text-white hover:bg-slate-900'}`}
                   >
                     {loading ? 'Hustling...' : isLogin ? 'Let\'s Gooo' : 'Start Now'}
                   </motion.button>
@@ -2906,7 +3025,7 @@ const AuthModal = ({ isOpen, initialMode, onClose }) => {
                   className="w-full bg-white border-4 border-black py-4 rounded-2xl flex items-center justify-center gap-4 shadow-[8px_8px_0px_rgba(0,0,0,0.1)] hover:shadow-[8px_8px_0px_black] transition-all"
                 >
                   <img src="https://www.gstatic.com/lamda/images/google_favicon_v2.svg" className="w-6 h-6" alt="G" />
-                  <span className="font-black text-xl uppercase italic">Continue with Google</span>
+                  <span className="font-black text-base sm:text-xl uppercase italic">Continue with Google</span>
                 </motion.button>
 
                 <div className="text-center pt-4">
@@ -3119,7 +3238,7 @@ const InboxModal = ({ isOpen, onClose, user }) => {
   return (
     <AnimatePresence>
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[10000] flex items-center justify-center p-4 backdrop-blur-xl bg-black/60" onClick={onClose}>
-        <motion.div initial={{ scale: 0.9, y: 30 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 30 }} className="bg-white border-[8px] border-black rounded-[40px] w-full max-w-[800px] h-[80vh] overflow-hidden shadow-[16px_16px_0px_rgba(0,0,0,1)] relative flex flex-col" onClick={e => e.stopPropagation()}>
+        <motion.div initial={{ scale: 0.9, y: 30 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 30 }} className="bg-white border-[5px] sm:border-[8px] border-black rounded-[28px] sm:rounded-[40px] w-full max-w-[800px] h-[86vh] sm:h-[80vh] overflow-hidden shadow-[8px_8px_0px_rgba(0,0,0,1)] sm:shadow-[16px_16px_0px_rgba(0,0,0,1)] relative flex flex-col" onClick={e => e.stopPropagation()}>
           
           {activeChat ? (
             <ChatBox application={activeChat} user={user} gigTitle={activeChat.gigs.title} onBack={() => setActiveChat(null)} />
@@ -3141,7 +3260,7 @@ const InboxModal = ({ isOpen, onClose, user }) => {
                     <div style={{ textAlign: 'center', padding: '3rem', color: '#aaa', fontWeight: '800' }}>No one has applied to your gigs yet!</div>
                   ) : (
                     receivedApps.map(app => (
-                      <div key={app.id} onClick={() => setActiveChat(app)} style={{ background: 'white', padding: '1.5rem', borderRadius: '16px', border: '2px solid #eee', marginBottom: '1rem', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.border = '2px solid black'} onMouseLeave={e => e.currentTarget.style.border = '2px solid #eee'}>
+                      <div key={app.id} onClick={() => setActiveChat(app)} style={{ background: 'white', padding: '1.5rem', borderRadius: '16px', border: '2px solid #eee', marginBottom: '1rem', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.border = '2px solid black'} onMouseLeave={e => e.currentTarget.style.border = '2px solid #eee'}>
                         <div>
                           <div style={{ fontWeight: '900', fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><User size={18}/> {app.applicant?.full_name || 'Anonymous'}</div>
                           <div style={{ color: '#666', fontWeight: '700', fontSize: '0.9rem', marginTop: '0.3rem' }}>Applied for: {app.gigs?.title}</div>
@@ -3157,7 +3276,7 @@ const InboxModal = ({ isOpen, onClose, user }) => {
                     <div style={{ textAlign: 'center', padding: '3rem', color: '#aaa', fontWeight: '800' }}>You haven't applied to any gigs yet!</div>
                   ) : (
                     sentApps.map(app => (
-                      <div key={app.id} onClick={() => setActiveChat(app)} style={{ background: 'white', padding: '1.5rem', borderRadius: '16px', border: '2px solid #eee', marginBottom: '1rem', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.border = '2px solid black'} onMouseLeave={e => e.currentTarget.style.border = '2px solid #eee'}>
+                      <div key={app.id} onClick={() => setActiveChat(app)} style={{ background: 'white', padding: '1.5rem', borderRadius: '16px', border: '2px solid #eee', marginBottom: '1rem', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.border = '2px solid black'} onMouseLeave={e => e.currentTarget.style.border = '2px solid #eee'}>
                         <div>
                           <div style={{ fontWeight: '900', fontSize: '1.2rem' }}>{app.gigs?.title}</div>
                           <div style={{ color: '#666', fontWeight: '700', fontSize: '0.9rem', marginTop: '0.3rem' }}>Posted by: {app.gigs?.poster?.full_name || 'Unknown'}</div>
@@ -3471,7 +3590,7 @@ function LandingPage({ setPage, isLoggedIn, onAuth, onLogout }) {
               <p style={{ color: 'var(--text-secondary)', fontSize: '1.25rem', marginBottom: '2rem' }}>Chat securely, agree on price, and get the job done quickly. No middlemen holding your money hostage.</p>
               <motion.div whileHover={{ scale: 1.05 }} className="modern-card" style={{ display: 'inline-flex', padding: '1.5rem', borderRadius: '24px', alignItems: 'center', gap: '1rem', background: 'linear-gradient(135deg, var(--brand-red) 0%, #ff8a00 100%)', color: 'white', border: 'none' }}>
                 <div style={{ background: 'white', color: 'var(--brand-red)', padding: '0.5rem', borderRadius: '12px' }}><MessageSquare size={24} /></div>
-                <span style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>"I can be there in 10 mins!"</span>
+                <span style={{ fontSize: 'clamp(1rem, 4vw, 1.5rem)', fontWeight: 'bold' }}>"I can be there in 10 mins!"</span>
               </motion.div>
             </motion.div>
           </div>
