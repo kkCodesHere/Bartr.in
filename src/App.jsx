@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion';
 import { supabase, isSupabaseConfigured } from './supabase';
+import { LocationPickerMap, GigLocationMap } from './MapboxComponents';
+import { FileUploadButton, FilePreview, MessageAttachment, uploadFile } from './FileUpload';
 import {
   MapPin,
   ArrowRight,
@@ -327,9 +329,17 @@ const PostGigModal = ({ isOpen, onClose, user, onPostSuccess, categories }) => {
   const [price, setPrice] = useState('');
   const [description, setDescription] = useState('');
   const [location, setLocation] = useState('');
+  const [coordinates, setCoordinates] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [showMap, setShowMap] = useState(false);
 
   if (!isOpen) return null;
+
+  const handleLocationSelect = (address, coords) => {
+    setLocation(address);
+    setCoordinates(coords);
+    setShowMap(false);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -338,7 +348,7 @@ const PostGigModal = ({ isOpen, onClose, user, onPostSuccess, categories }) => {
       return;
     }
     setLoading(true);
-    const { error } = await supabase.from('gigs').insert({
+    const gigData = {
       client_id: user.id,
       title,
       category,
@@ -346,12 +356,20 @@ const PostGigModal = ({ isOpen, onClose, user, onPostSuccess, categories }) => {
       description,
       location,
       status: 'Active'
-    });
+    };
+    
+    // Add coordinates if available
+    if (coordinates) {
+      gigData.latitude = coordinates[0];
+      gigData.longitude = coordinates[1];
+    }
+    
+    const { error } = await supabase.from('gigs').insert(gigData);
     setLoading(false);
     if (!error) {
       onPostSuccess();
       onClose();
-      setTitle(''); setPrice(''); setDescription(''); setLocation('');
+      setTitle(''); setPrice(''); setDescription(''); setLocation(''); setCoordinates(null);
     } else {
       alert("Error posting gig: " + error.message);
     }
@@ -360,7 +378,7 @@ const PostGigModal = ({ isOpen, onClose, user, onPostSuccess, categories }) => {
   return (
     <AnimatePresence>
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[10000] flex items-center justify-center p-4 backdrop-blur-xl bg-black/60" onClick={onClose}>
-        <motion.div initial={{ scale: 0.9, y: 30 }} animate={{ scale: 1, y: 0 }} className="bg-white border-[5px] sm:border-[8px] border-black rounded-[28px] sm:rounded-[40px] w-full max-w-[600px] max-h-[90vh] overflow-y-auto p-5 sm:p-8 shadow-[8px_8px_0px_rgba(0,0,0,1)] sm:shadow-[16px_16px_0px_rgba(0,0,0,1)] relative" onClick={e => e.stopPropagation()}>
+        <motion.div initial={{ scale: 0.9, y: 30 }} animate={{ scale: 1, y: 0 }} className="bg-white border-[5px] sm:border-[8px] border-black rounded-[28px] sm:rounded-[40px] w-full max-w-[700px] max-h-[90vh] overflow-y-auto p-5 sm:p-8 shadow-[8px_8px_0px_rgba(0,0,0,1)] sm:shadow-[16px_16px_0px_rgba(0,0,0,1)] relative" onClick={e => e.stopPropagation()}>
           <button onClick={onClose} className="absolute top-4 right-4 sm:top-6 sm:right-6 bg-slate-100 text-black p-2 rounded-xl hover:bg-black hover:text-white transition-colors">
             <X size={20} strokeWidth={3} />
           </button>
@@ -383,9 +401,30 @@ const PostGigModal = ({ isOpen, onClose, user, onPostSuccess, categories }) => {
               </div>
             </div>
             <div>
-              <label className="text-xs font-black uppercase tracking-widest text-slate-400">Location (or Remote)</label>
+              <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center justify-between">
+                <span>Location</span>
+                <button
+                  type="button"
+                  onClick={() => setShowMap(!showMap)}
+                  className="text-xs font-black uppercase bg-black text-white px-3 py-1 rounded-full hover:bg-slate-800 transition-colors"
+                >
+                  {showMap ? 'Hide Map' : '📍 Pick on Map'}
+                </button>
+              </label>
               <input type="text" placeholder="e.g. Dharampeth, Remote" className="w-full bg-slate-50 border-4 border-black p-4 rounded-2xl font-bold focus:bg-white outline-none" value={location} onChange={e=>setLocation(e.target.value)} required />
+              {coordinates && (
+                <div className="text-xs font-bold text-green-600 mt-2">
+                  ✓ Location pinned on map
+                </div>
+              )}
             </div>
+            
+            {showMap && (
+              <div style={{ height: '400px' }}>
+                <LocationPickerMap onLocationSelect={handleLocationSelect} initialLocation={coordinates} />
+              </div>
+            )}
+            
             <div>
               <label className="text-xs font-black uppercase tracking-widest text-slate-400">Description</label>
               <textarea placeholder="Give more details..." className="w-full bg-slate-50 border-4 border-black p-4 rounded-2xl font-bold focus:bg-white outline-none" rows="3" value={description} onChange={e=>setDescription(e.target.value)} required></textarea>
@@ -401,7 +440,7 @@ const PostGigModal = ({ isOpen, onClose, user, onPostSuccess, categories }) => {
 };
 
 // --- GIG DETAILS MODAL ---
-const GigDetailsModal = ({ gig, catInfo, user, myApplications, applyingGigId, onApply, onClose, formatTime }) => {
+const GigDetailsModal = ({ gig, catInfo, user, myApplications, applyingGigId, onApply, onOpenChat, onClose, formatTime }) => {
   if (!gig) return null;
 
   const posterName = gig.user_profiles?.full_name || 'Anonymous';
@@ -473,6 +512,17 @@ const GigDetailsModal = ({ gig, catInfo, user, myApplications, applyingGigId, on
                   <p className="text-lg md:text-xl font-bold text-slate-700 leading-relaxed">{gig.description}</p>
                 </div>
 
+                {/* Location Map */}
+                <div className="mb-8">
+                  <div className="text-xs font-black uppercase tracking-widest text-slate-400 mb-3 flex items-center gap-2">
+                    <MapPin size={16} /> Location on Map
+                  </div>
+                  <GigLocationMap 
+                    location={gig.location} 
+                    coordinates={gig.latitude && gig.longitude ? [gig.latitude, gig.longitude] : null}
+                  />
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {[
                     { icon: <ShieldCheck size={20} />, title: 'Safe Contact', text: 'Chat stays inside Bartr until both sides are ready.' },
@@ -533,6 +583,23 @@ const GigDetailsModal = ({ gig, catInfo, user, myApplications, applyingGigId, on
                   {actionLabel}
                   {!isOwner && !hasApplied && <ArrowRight size={22} />}
                 </motion.button>
+
+                {!isOwner && user && hasApplied && (
+                  <motion.button
+                    whileHover={{ scale: 1.02, y: -2 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={onOpenChat}
+                    className="w-full border-4 border-black py-4 rounded-[24px] font-black text-lg uppercase flex items-center justify-center gap-3 transition-all bg-white text-black shadow-[10px_10px_0px_black]"
+                  >
+                    <MessageSquare size={20} />
+                    Open Chat
+                  </motion.button>
+                )}
+                {!isOwner && user && !hasApplied && (
+                  <div className="text-center text-sm font-bold text-slate-500 mt-2">
+                    💡 Apply first to start chatting with the poster
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -668,6 +735,7 @@ const GigsPage = ({ setPage, isLoggedIn, onAuth, onLogout, currentPage, user }) 
         myApplications={myApplications}
         applyingGigId={applyingGigId}
         onApply={handleApply}
+        onOpenChat={() => window.dispatchEvent(new Event('openInboxModal'))}
         onClose={() => setSelectedGig(null)}
         formatTime={formatTime}
       />
@@ -966,6 +1034,7 @@ export const checkSubscriptionActive = (user) => {
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 const VALID_COUPON = 'COCKROACH';
+const TESTER_COUPON = 'TESTER2024'; // Free access for testers
 
 const SUBSCRIPTION_PLANS = [
   { id: '3months', name: '3 Months Pro', durationMonths: 3, originalPrice: 199, discountedPrice: 59, desc: 'Perfect for starters looking to test the Nagpur market.' },
@@ -1006,7 +1075,8 @@ const SubscriptionPlansContent = ({ coupon, setCoupon, couponApplied, couponErro
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.5rem', alignItems: 'stretch', marginBottom: '2rem' }}>
       {SUBSCRIPTION_PLANS.map((plan) => {
         const originalPrice = plan.originalPrice;
-        const price = couponApplied ? plan.discountedPrice : originalPrice;
+        const isTesterFree = couponApplied && coupon === TESTER_COUPON;
+        const price = isTesterFree ? 0 : (couponApplied ? plan.discountedPrice : originalPrice);
         return (
           <motion.div
             key={plan.id}
@@ -1033,8 +1103,12 @@ const SubscriptionPlansContent = ({ coupon, setCoupon, couponApplied, couponErro
               <h3 style={{ fontSize: compact ? '1.35rem' : '2rem', fontWeight: '950', marginBottom: '0.5rem', textTransform: 'uppercase' }}>{plan.name}</h3>
               <p style={{ color: '#64748b', fontWeight: '700', fontSize: '0.9rem', marginBottom: '1.5rem' }}>{plan.desc}</p>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: compact ? 'clamp(2.5rem, 14vw, 3rem)' : 'clamp(3rem, 13vw, 4.5rem)', fontWeight: '950', letterSpacing: '-3px' }}>₹{price}</span>
-                {couponApplied && (
+                {isTesterFree ? (
+                  <span style={{ fontSize: compact ? 'clamp(2.5rem, 14vw, 3rem)' : 'clamp(3rem, 13vw, 4.5rem)', fontWeight: '950', letterSpacing: '-3px', color: '#10b981' }}>FREE</span>
+                ) : (
+                  <span style={{ fontSize: compact ? 'clamp(2.5rem, 14vw, 3rem)' : 'clamp(3rem, 13vw, 4.5rem)', fontWeight: '950', letterSpacing: '-3px' }}>₹{price}</span>
+                )}
+                {couponApplied && !isTesterFree && (
                   <span style={{ textDecoration: 'line-through', color: '#94a3b8', fontSize: compact ? '1.25rem' : '2rem', fontWeight: '700' }}>₹{originalPrice}</span>
                 )}
               </div>
@@ -1056,7 +1130,7 @@ const SubscriptionPlansContent = ({ coupon, setCoupon, couponApplied, couponErro
               onClick={() => handleSubscribe(plan)}
               style={{
                 width: '100%',
-                background: plan.popular ? '#ef4444' : 'black',
+                background: isTesterFree ? '#10b981' : (plan.popular ? '#ef4444' : 'black'),
                 color: 'white',
                 border: '4.5px solid black',
                 padding: '1rem',
@@ -1069,7 +1143,7 @@ const SubscriptionPlansContent = ({ coupon, setCoupon, couponApplied, couponErro
                 letterSpacing: '0.05em'
               }}
             >
-              {loading ? 'Processing...' : 'Subscribe Now'}
+              {loading ? 'Processing...' : (isTesterFree ? 'Activate Free Access' : 'Subscribe Now')}
             </motion.button>
           </motion.div>
         );
@@ -1093,7 +1167,9 @@ const SubscriptionPlansContent = ({ coupon, setCoupon, couponApplied, couponErro
         </form>
         {couponApplied && (
           <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} style={{ color: '#10b981', fontWeight: '900', fontSize: '0.85rem', marginTop: '0.5rem' }}>
-            Code &quot;COCKROACH&quot; applied — prices dropped.
+            {coupon === TESTER_COUPON 
+              ? '🎉 Tester code applied — FREE ACCESS for all plans!' 
+              : 'Code "COCKROACH" applied — prices dropped.'}
           </motion.div>
         )}
         {couponError && (
@@ -1126,6 +1202,9 @@ const useSubscriptionCheckout = ({ user, isLoggedIn, onAuth, onPaymentSuccess, o
     if (coupon === VALID_COUPON) {
       setCouponApplied(true);
       setCouponError('');
+    } else if (coupon === TESTER_COUPON) {
+      setCouponApplied(true);
+      setCouponError('');
     } else {
       setCouponError('Invalid coupon code (case-sensitive)');
       setCouponApplied(false);
@@ -1138,6 +1217,39 @@ const useSubscriptionCheckout = ({ user, isLoggedIn, onAuth, onPaymentSuccess, o
       return;
     }
     setLoading(true);
+    
+    // Check if tester coupon is applied - bypass payment
+    if (couponApplied && coupon === TESTER_COUPON) {
+      try {
+        const expiryDate = new Date();
+        expiryDate.setMonth(expiryDate.getMonth() + plan.durationMonths);
+        const { error } = await supabase.auth.updateUser({
+          data: {
+            is_subscribed: true,
+            subscription_plan: plan.name + ' (Tester)',
+            subscription_expiry: expiryDate.toISOString(),
+            tester_access: true,
+          },
+        });
+        if (error) throw error;
+        const { data: { user: updatedUser } } = await supabase.auth.getUser();
+        if (updatedUser) window.dispatchEvent(new CustomEvent('subscription_updated'));
+        setPaymentSuccess(true);
+        setTimeout(() => {
+          setPaymentSuccess(false);
+          resetCouponState();
+          onPaymentSuccess?.();
+          onClose?.();
+        }, 2500);
+        setLoading(false);
+        return;
+      } catch (err) {
+        alert(err.message || 'Error activating tester subscription.');
+        setLoading(false);
+        return;
+      }
+    }
+    
     try {
       const orderRes = await fetch(`${API_URL}/create-subscription-order`, {
         method: 'POST',
@@ -2277,7 +2389,7 @@ const CustomCursor = () => {
           border: '2px solid black',
           borderRadius: '50%',
           pointerEvents: 'none',
-          zIndex: 9998,
+          zIndex: 999999,
           willChange: 'transform, width, height, margin',
           transition: 'width 0.2s, height 0.2s, margin 0.2s, background-color 0.2s'
         }}
@@ -2286,7 +2398,7 @@ const CustomCursor = () => {
         style={{
           position: 'fixed', left: 0, top: 0, x: cursorX, y: cursorY,
           width: '8px', height: '8px', marginLeft: '-4px', marginTop: '-4px',
-          backgroundColor: 'black', borderRadius: '50%', pointerEvents: 'none', zIndex: 9999,
+          backgroundColor: 'black', borderRadius: '50%', pointerEvents: 'none', zIndex: 999999,
           willChange: 'transform',
           opacity: isHovering ? 0 : 1,
           transition: 'opacity 0.2s'
@@ -3049,6 +3161,10 @@ const AuthModal = ({ isOpen, initialMode, onClose }) => {
 const ChatBox = ({ application, user, gigTitle, onBack }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
+  const [offerAmount, setOfferAmount] = useState('');
+  const [offerNote, setOfferNote] = useState('');
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
   const messagesEndRef = useRef(null);
 
   const applicantId = application.applicant_id;
@@ -3061,20 +3177,65 @@ const ChatBox = ({ application, user, gigTitle, onBack }) => {
     : (application.gigs.poster?.full_name || 'Gig Poster');
     
   const receiverId = isPoster ? applicantId : application.gigs.client_id;
+  const offerPrefix = '[[offer]]';
+  const acceptPrefix = '[[accept]]';
+
+  const parseStructuredMessage = (content) => {
+    if (typeof content !== 'string') return { type: 'text', text: '' };
+    if (content.startsWith(offerPrefix)) {
+      const [, amount = '', note = ''] = content.split('|');
+      return { type: 'offer', amount, note };
+    }
+    if (content.startsWith(acceptPrefix)) {
+      const [, amount = '', note = ''] = content.split('|');
+      return { type: 'accept', amount, note };
+    }
+    return { type: 'text', text: content };
+  };
+
+  const sendStructuredMessage = async (content, attachment = null) => {
+    const msg = {
+      gig_id: gigId,
+      sender_id: user.id,
+      receiver_id: receiverId,
+      content
+    };
+
+    // Add attachment data if present
+    if (attachment) {
+      msg.attachment_url = attachment.url;
+      msg.attachment_type = attachment.type;
+      msg.attachment_name = attachment.name;
+      msg.attachment_size = attachment.size;
+    }
+
+    return supabase.from('messages').insert([msg]);
+  };
 
   useEffect(() => {
     fetchMessages();
     const channel = supabase
-      .channel(`chat_${application.id}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `gig_id=eq.${gigId}` }, payload => {
+      .channel(`chat_${gigId}_${user.id}_${receiverId}`)
+      .on('postgres_changes', { 
+        event: 'INSERT', 
+        schema: 'public', 
+        table: 'messages', 
+        filter: `gig_id=eq.${gigId}` 
+      }, payload => {
         const msg = payload.new;
-        if ((msg.sender_id === applicantId || msg.receiver_id === applicantId)) {
-          setMessages(prev => [...prev, msg]);
+        // Only add messages that are part of this conversation
+        if ((msg.sender_id === user.id && msg.receiver_id === receiverId) || 
+            (msg.sender_id === receiverId && msg.receiver_id === user.id)) {
+          setMessages(prev => {
+            // Avoid duplicates
+            if (prev.some(m => m.id === msg.id)) return prev;
+            return [...prev, msg];
+          });
         }
       })
       .subscribe();
     return () => supabase.removeChannel(channel);
-  }, [application]);
+  }, [application, gigId, user.id, receiverId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -3085,22 +3246,58 @@ const ChatBox = ({ application, user, gigTitle, onBack }) => {
       .from('messages')
       .select('*')
       .eq('gig_id', gigId)
-      .or(`sender_id.eq.${applicantId},receiver_id.eq.${applicantId}`)
+      .or(`and(sender_id.eq.${user.id},receiver_id.eq.${receiverId}),and(sender_id.eq.${receiverId},receiver_id.eq.${user.id})`)
       .order('created_at', { ascending: true });
     if (data) setMessages(data);
+    if (error) console.error('Error fetching messages:', error);
   };
 
   const handleSend = async (e) => {
     e.preventDefault();
-    if (!newMessage.trim()) return;
-    const msg = {
-      gig_id: gigId,
-      sender_id: user.id,
-      receiver_id: receiverId,
-      content: newMessage.trim()
-    };
-    setNewMessage('');
-    await supabase.from('messages').insert([msg]);
+    
+    // Check if we have a message or file
+    if (!newMessage.trim() && !selectedFile) return;
+    
+    setUploading(true);
+    
+    try {
+      let attachment = null;
+      
+      // Upload file if selected
+      if (selectedFile) {
+        attachment = await uploadFile(selectedFile, user.id, gigId);
+      }
+      
+      // Send message with or without attachment
+      const messageContent = newMessage.trim() || '📎 Attachment';
+      await sendStructuredMessage(messageContent, attachment);
+      
+      // Clear inputs
+      setNewMessage('');
+      setSelectedFile(null);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      alert('Failed to send message. Please try again.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleSendOffer = async (e) => {
+    e.preventDefault();
+    const amount = offerAmount.trim();
+    if (!amount) return;
+
+    const note = offerNote.trim();
+    const content = `${offerPrefix}|${amount}|${note}`;
+    setOfferAmount('');
+    setOfferNote('');
+    await sendStructuredMessage(content);
+  };
+
+  const handleAcceptOffer = async (amount, note) => {
+    const content = `${acceptPrefix}|${amount}|${note}`;
+    await sendStructuredMessage(content);
   };
 
   return (
@@ -3128,25 +3325,81 @@ const ChatBox = ({ application, user, gigTitle, onBack }) => {
         <div style={{ alignSelf: 'center', background: 'white', padding: '0.4rem 1rem', borderRadius: '100px', fontSize: '0.7rem', fontWeight: '800', color: '#94a3b8', marginBottom: '1rem', border: '1px solid #e2e8f0', boxShadow: '0 2px 5px rgba(0,0,0,0.02)' }}>
           Regarding: {gigTitle}
         </div>
+
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center', justifyContent: 'space-between', background: 'white', border: '1px solid #e2e8f0', borderRadius: '20px', padding: '1rem 1.1rem', boxShadow: '0 2px 12px rgba(0,0,0,0.03)' }}>
+          <div>
+            <div style={{ fontSize: '0.75rem', fontWeight: '900', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.12em' }}>Negotiate</div>
+            <div style={{ fontSize: '0.95rem', fontWeight: '700', color: '#0f172a' }}>Send a structured offer instead of a plain message.</div>
+          </div>
+          <div style={{ fontSize: '0.75rem', fontWeight: '800', color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Offer messages appear as cards</div>
+        </div>
         
         {messages.map(m => {
           const isMe = m.sender_id === user.id;
+          const parsed = parseStructuredMessage(m.content);
+          const isOffer = parsed.type === 'offer';
+          const isAccept = parsed.type === 'accept';
           return (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} key={m.id} style={{ alignSelf: isMe ? 'flex-end' : 'flex-start', maxWidth: '75%', display: 'flex', flexDirection: 'column' }}>
               <div style={{ 
-                background: isMe ? 'linear-gradient(135deg, #000000, #1f2937)' : '#ffffff', 
-                color: isMe ? '#ffffff' : '#0f172a', 
-                padding: '0.8rem 1.2rem', 
+                background: isOffer 
+                  ? (isMe ? 'linear-gradient(135deg, #111827, #000000)' : '#fff7ed')
+                  : isAccept
+                    ? '#ecfdf5'
+                    : isMe ? 'linear-gradient(135deg, #000000, #1f2937)' : '#ffffff', 
+                color: isOffer
+                  ? (isMe ? '#ffffff' : '#9a3412')
+                  : isAccept
+                    ? '#065f46'
+                    : isMe ? '#ffffff' : '#0f172a', 
+                padding: isOffer ? '1rem 1.2rem' : '0.8rem 1.2rem', 
                 borderRadius: '20px', 
                 borderBottomRightRadius: isMe ? '4px' : '20px', 
                 borderBottomLeftRadius: isMe ? '20px' : '4px', 
                 fontWeight: '600',
                 fontSize: '0.95rem',
                 lineHeight: '1.4',
-                boxShadow: isMe ? '0 4px 15px rgba(0,0,0,0.1)' : '0 2px 10px rgba(0,0,0,0.04)',
-                border: isMe ? 'none' : '1px solid #e2e8f0'
+                boxShadow: isOffer
+                  ? (isMe ? '0 6px 18px rgba(0,0,0,0.12)' : '0 4px 14px rgba(249,115,22,0.12)')
+                  : isMe ? '0 4px 15px rgba(0,0,0,0.1)' : '0 2px 10px rgba(0,0,0,0.04)',
+                border: isMe || isOffer || isAccept ? 'none' : '1px solid #e2e8f0'
               }}>
-                {m.content}
+                {isOffer ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.72rem', fontWeight: '900', letterSpacing: '0.12em', textTransform: 'uppercase', color: isMe ? '#fca5a5' : '#fb923c' }}>
+                      <span style={{ width: '8px', height: '8px', borderRadius: '999px', background: isMe ? '#f87171' : '#f97316', display: 'inline-block' }} />
+                      Negotiation Offer
+                    </div>
+                    <div style={{ fontSize: '1.9rem', fontWeight: '900', letterSpacing: '-0.05em' }}>{parsed.amount}</div>
+                    {parsed.note && <div style={{ fontSize: '0.95rem', fontWeight: '600', opacity: 0.85 }}>{parsed.note}</div>}
+                    {!isMe && (
+                      <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginTop: '0.2rem' }}>
+                        <button type="button" onClick={() => handleAcceptOffer(parsed.amount, parsed.note)} style={{ background: '#10b981', color: 'white', border: 'none', borderRadius: '999px', padding: '0.55rem 0.95rem', fontWeight: '900', cursor: 'pointer' }}>Accept</button>
+                        <button type="button" onClick={() => { setOfferAmount(parsed.amount.replace(/[^\d.]/g, '')); setOfferNote(`Counter to ${parsed.amount}`); }} style={{ background: 'white', color: '#0f172a', border: '1px solid #e2e8f0', borderRadius: '999px', padding: '0.55rem 0.95rem', fontWeight: '900', cursor: 'pointer' }}>Counter</button>
+                      </div>
+                    )}
+                  </div>
+                ) : isAccept ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    <div style={{ fontSize: '0.72rem', fontWeight: '900', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#059669' }}>Offer accepted</div>
+                    <div style={{ fontSize: '1rem', fontWeight: '700' }}>{parsed.amount}</div>
+                    {parsed.note && <div style={{ fontSize: '0.9rem' }}>{parsed.note}</div>}
+                  </div>
+                ) : (
+                  <>
+                    {m.content}
+                    {m.attachment_url && (
+                      <MessageAttachment 
+                        attachment={{
+                          url: m.attachment_url,
+                          type: m.attachment_type,
+                          name: m.attachment_name,
+                          size: m.attachment_size
+                        }}
+                      />
+                    )}
+                  </>
+                )}
               </div>
               <div style={{ fontSize: '0.65rem', color: '#94a3b8', marginTop: '0.4rem', textAlign: isMe ? 'right' : 'left', fontWeight: '700', padding: '0 0.5rem' }}>
                 {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -3159,38 +3412,97 @@ const ChatBox = ({ application, user, gigTitle, onBack }) => {
       </div>
 
       {/* Modern Input */}
-      <form onSubmit={handleSend} style={{ padding: '1rem 1.5rem', background: 'white', borderTop: '1px solid #e2e8f0', display: 'flex', gap: '0.8rem', alignItems: 'center', zIndex: 10 }}>
-        <div style={{ flex: 1, background: '#f1f5f9', borderRadius: '100px', display: 'flex', alignItems: 'center', padding: '0.5rem 1rem', border: '1px solid #e2e8f0', transition: 'border 0.2s' }}>
-          <input 
-            type="text" 
-            value={newMessage} 
-            onChange={e=>setNewMessage(e.target.value)} 
-            placeholder="Type your message..." 
-            style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontWeight: '600', fontSize: '0.95rem', color: '#0f172a', padding: '0.4rem 0' }} 
+      <form onSubmit={handleSend} style={{ padding: '1rem 1.5rem', background: 'white', borderTop: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '0.8rem', zIndex: 10 }}>
+        
+        {/* File Preview */}
+        <AnimatePresence>
+          {selectedFile && (
+            <FilePreview 
+              file={selectedFile} 
+              onRemove={() => setSelectedFile(null)} 
+            />
+          )}
+        </AnimatePresence>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'auto minmax(0, 1fr) auto', gap: '0.8rem', alignItems: 'center' }}>
+          {/* File Upload Button */}
+          <FileUploadButton 
+            onFileSelect={setSelectedFile} 
+            disabled={uploading}
           />
+          
+          {/* Message Input */}
+          <div style={{ background: '#f1f5f9', borderRadius: '100px', display: 'flex', alignItems: 'center', padding: '0.5rem 1rem', border: '1px solid #e2e8f0', transition: 'border 0.2s' }}>
+            <input 
+              type="text" 
+              value={newMessage} 
+              onChange={e=>setNewMessage(e.target.value)} 
+              placeholder={selectedFile ? "Add a caption (optional)" : "Type your message..."} 
+              disabled={uploading}
+              style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontWeight: '600', fontSize: '0.95rem', color: '#0f172a', padding: '0.4rem 0' }} 
+            />
+          </div>
+          
+          {/* Send Button */}
+          <motion.button 
+            whileHover={{ scale: 1.05 }} 
+            whileTap={{ scale: 0.95 }} 
+            type="submit" 
+            disabled={(!newMessage.trim() && !selectedFile) || uploading}
+            style={{ 
+              background: (newMessage.trim() || selectedFile) && !uploading ? '#000000' : '#cbd5e1', 
+              color: 'white', 
+              border: 'none', 
+              width: '46px', 
+              height: '46px', 
+              borderRadius: '50%', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              cursor: (newMessage.trim() || selectedFile) && !uploading ? 'pointer' : 'not-allowed',
+              boxShadow: (newMessage.trim() || selectedFile) && !uploading ? '0 4px 15px rgba(0,0,0,0.2)' : 'none',
+              transition: 'all 0.3s'
+            }}
+          >
+            {uploading ? (
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              >
+                <Send size={18} style={{ marginLeft: '2px' }} />
+              </motion.div>
+            ) : (
+              <Send size={18} style={{ marginLeft: '2px' }} />
+            )}
+          </motion.button>
         </div>
-        <motion.button 
-          whileHover={{ scale: 1.05 }} 
-          whileTap={{ scale: 0.95 }} 
-          type="submit" 
-          disabled={!newMessage.trim()}
-          style={{ 
-            background: newMessage.trim() ? '#000000' : '#cbd5e1', 
-            color: 'white', 
-            border: 'none', 
-            width: '46px', 
-            height: '46px', 
-            borderRadius: '50%', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            cursor: newMessage.trim() ? 'pointer' : 'not-allowed',
-            boxShadow: newMessage.trim() ? '0 4px 15px rgba(0,0,0,0.2)' : 'none',
-            transition: 'all 0.3s'
-          }}
-        >
-          <Send size={18} style={{ marginLeft: '2px' }} />
-        </motion.button>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '0.75rem' }}>
+          <input
+            type="text"
+            value={offerAmount}
+            onChange={e => setOfferAmount(e.target.value)}
+            placeholder="Offer amount"
+            style={{ border: '1px solid #e2e8f0', borderRadius: '16px', padding: '0.9rem 1rem', fontWeight: '800', outline: 'none', background: '#fff7ed' }}
+          />
+          <input
+            type="text"
+            value={offerNote}
+            onChange={e => setOfferNote(e.target.value)}
+            placeholder="Add a note"
+            style={{ border: '1px solid #e2e8f0', borderRadius: '16px', padding: '0.9rem 1rem', fontWeight: '700', outline: 'none', background: '#fff' }}
+          />
+          <motion.button
+            type="button"
+            onClick={handleSendOffer}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            disabled={!offerAmount.trim()}
+            style={{ background: offerAmount.trim() ? '#f97316' : '#cbd5e1', color: 'white', border: 'none', borderRadius: '16px', fontWeight: '900', cursor: offerAmount.trim() ? 'pointer' : 'not-allowed', padding: '0.9rem 1rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}
+          >
+            Send Offer
+          </motion.button>
+        </div>
       </form>
     </div>
   );
