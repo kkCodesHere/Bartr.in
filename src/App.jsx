@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion';
 import { supabase, isSupabaseConfigured } from './supabase';
-import { LocationPickerMap, GigLocationMap } from './MapboxComponents';
+import { LocationPickerMap, GigLocationMap } from './OSMComponents';
 import { FileUploadButton, FilePreview, MessageAttachment, uploadFile } from './FileUpload';
 import {
   MapPin,
@@ -331,20 +331,22 @@ const PostGigModal = ({ isOpen, onClose, user, onPostSuccess, categories }) => {
   const [location, setLocation] = useState('');
   const [coordinates, setCoordinates] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [showMap, setShowMap] = useState(false);
 
   if (!isOpen) return null;
 
   const handleLocationSelect = (address, coords) => {
     setLocation(address);
     setCoordinates(coords);
-    setShowMap(false);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!user) {
       alert("Please login to post a gig!");
+      return;
+    }
+    if (!location) {
+      alert("Please select a location on the map!");
       return;
     }
     setLoading(true);
@@ -357,13 +359,7 @@ const PostGigModal = ({ isOpen, onClose, user, onPostSuccess, categories }) => {
       location,
       status: 'Active'
     };
-    
-    // Add coordinates if available
-    if (coordinates) {
-      gigData.latitude = coordinates[0];
-      gigData.longitude = coordinates[1];
-    }
-    
+
     const { error } = await supabase.from('gigs').insert(gigData);
     setLoading(false);
     if (!error) {
@@ -401,30 +397,17 @@ const PostGigModal = ({ isOpen, onClose, user, onPostSuccess, categories }) => {
               </div>
             </div>
             <div>
-              <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center justify-between">
-                <span>Location</span>
-                <button
-                  type="button"
-                  onClick={() => setShowMap(!showMap)}
-                  className="text-xs font-black uppercase bg-black text-white px-3 py-1 rounded-full hover:bg-slate-800 transition-colors"
-                >
-                  {showMap ? 'Hide Map' : '📍 Pick on Map'}
-                </button>
+              <label className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2 mb-2">
+                <span>📍</span><span>Location</span>
+                {coordinates && <span style={{ color: '#16a34a', fontSize: '0.7rem', fontWeight: 800, marginLeft: 'auto' }}>✓ Pinned</span>}
               </label>
-              <input type="text" placeholder="e.g. Dharampeth, Remote" className="w-full bg-slate-50 border-4 border-black p-4 rounded-2xl font-bold focus:bg-white outline-none" value={location} onChange={e=>setLocation(e.target.value)} required />
-              {coordinates && (
-                <div className="text-xs font-bold text-green-600 mt-2">
-                  ✓ Location pinned on map
-                </div>
-              )}
-            </div>
-            
-            {showMap && (
-              <div style={{ height: '400px' }}>
-                <LocationPickerMap onLocationSelect={handleLocationSelect} initialLocation={coordinates} />
+              {/* Hidden input so form validation still works */}
+              <input type="text" value={location} onChange={() => {}} required style={{ display: 'none' }} readOnly />
+              <div style={{ height: '420px' }}>
+                <LocationPickerMap onLocationSelect={handleLocationSelect} initialLocation={coordinates ? [coordinates[0], coordinates[1]] : null} />
               </div>
-            )}
-            
+            </div>
+
             <div>
               <label className="text-xs font-black uppercase tracking-widest text-slate-400">Description</label>
               <textarea placeholder="Give more details..." className="w-full bg-slate-50 border-4 border-black p-4 rounded-2xl font-bold focus:bg-white outline-none" rows="3" value={description} onChange={e=>setDescription(e.target.value)} required></textarea>
@@ -527,7 +510,7 @@ const GigDetailsModal = ({ gig, catInfo, user, myApplications, applyingGigId, on
                   {[
                     { icon: <ShieldCheck size={20} />, title: 'Safe Contact', text: 'Chat stays inside Bartr until both sides are ready.' },
                     { icon: <MessageSquare size={20} />, title: 'Direct Talk', text: 'Apply once, then coordinate with the poster.' },
-                    { icon: <CheckCircle size={20} />, title: 'Local First', text: 'Built for fast nearby work in Nagpur.' }
+                    { icon: <CheckCircle size={20} />, title: 'Local First', text: 'Built for fast nearby work in India.' }
                   ].map((item) => (
                     <div key={item.title} className="bg-slate-50 border-2 border-slate-200 rounded-[22px] p-5">
                       <div className="w-10 h-10 bg-black text-white rounded-xl flex items-center justify-center mb-3">{item.icon}</div>
@@ -991,7 +974,7 @@ const GigsPage = ({ setPage, isLoggedIn, onAuth, onLogout, currentPage, user }) 
                 <span style={{ fontSize: '0.85rem', fontWeight: '900', color: '#ef4444' }}>⚡ LIVE MARKET: KITCHEN SINK IN DHARAMPETH (₹400)</span>
                 <span style={{ fontSize: '0.85rem', fontWeight: '900', color: '#3b82f6' }}>• NEW TECH POST: REACT DEBUGGING (₹1200)</span>
                 <span style={{ fontSize: '0.85rem', fontWeight: '900', color: '#22c55e' }}>• SUCCESS: LOGO GIG FILLED IN 12 MINS</span>
-                <span style={{ fontSize: '0.85rem', fontWeight: '900', color: '#fff' }}>• ACTIVE USERS: 142 IN NAGPUR</span>
+                <span style={{ fontSize: '0.85rem', fontWeight: '900', color: '#fff' }}>• ACTIVE USERS: 142 IN INDIA</span>
               </React.Fragment>
             ))}
           </motion.div>
@@ -1037,7 +1020,7 @@ const VALID_COUPON = 'COCKROACH';
 const TESTER_COUPON = 'TESTER2024'; // Free access for testers
 
 const SUBSCRIPTION_PLANS = [
-  { id: '3months', name: '3 Months Pro', durationMonths: 3, originalPrice: 199, discountedPrice: 59, desc: 'Perfect for starters looking to test the Nagpur market.' },
+  { id: '3months', name: '3 Months Pro', durationMonths: 3, originalPrice: 199, discountedPrice: 59, desc: 'Perfect for starters looking to test the India market.' },
   { id: '6months', name: '6 Months Pro', durationMonths: 6, originalPrice: 299, discountedPrice: 149, desc: 'Most popular option for active local freelancers.', popular: true },
   { id: '1year', name: '1 Year Pro', durationMonths: 12, originalPrice: 999, discountedPrice: 499, desc: 'Unbeatable value for premium local service providers.' }
 ];
@@ -1401,6 +1384,10 @@ const SubscriptionPage = ({ setPage, user, isLoggedIn, onAuth, onLogout }) => {
 // --- STUDENT PAGE SKELETON ---
 const StudentPage = ({ setPage, isLoggedIn, onAuth, onLogout }) => {
   const [scrolled, setScrolled] = useState(false);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [clickedCard, setClickedCard] = useState(null);
+  const canvasRef = useRef(null);
+
   useEffect(() => {
     window.scrollTo(0, 0);
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -1408,13 +1395,323 @@ const StudentPage = ({ setPage, isLoggedIn, onAuth, onLogout }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const studentCards = [
+    { image: '/study.gif',      title: 'Notes Marketplace',    desc: 'Buy and sell notes, PDFs and study materials.', tag: '📚', color: '#fef2f2', border: '#fecaca' },
+    { image: '/assignment.gif', title: 'Assignment Help',       desc: 'Get help with assignments and practical files.', tag: '✏️', color: '#eff6ff', border: '#bfdbfe' },
+    { image: '/calculator.gif', title: 'Student Rentals',       desc: 'Rent calculators, books and gadgets nearby.',   tag: '🔧', color: '#fffbeb', border: '#fde68a' },
+    { image: '/workspace.gif',  title: 'Freelance Gigs',        desc: 'Find freelance work and paid projects.',        tag: '💼', color: '#f0fdf4', border: '#bbf7d0' },
+    { image: '/teamwork.gif',   title: 'Project Collaboration', desc: 'Build projects with talented students.',        tag: '🤝', color: '#faf5ff', border: '#e9d5ff' },
+    { image: '/growth.gif',     title: 'Skill Exchange',        desc: 'Exchange skills and grow together.',            tag: '🚀', color: '#fff1f2', border: '#fecdd3' },
+  ];
+
+  const tickerItems = [
+    { icon: '🔥', text: 'Java Assignment Help Needed', status: 'LIVE' },
+    { icon: '💻', text: 'React Project Posted',         status: 'NEW' },
+    { icon: '📘', text: 'Semester Notes Uploaded',      status: 'TRENDING' },
+    { icon: '🧮', text: 'Scientific Calculator For Rent', status: 'HOT' },
+    { icon: '🚀', text: '₹800 Gig Available',            status: 'LIVE' },
+    { icon: '🎨', text: 'PPT Design Needed',             status: 'NEW' },
+    { icon: '📱', text: 'App Dev Partner Wanted',        status: 'LIVE' },
+    { icon: '📊', text: 'Data Science Project Open',     status: 'NEW' },
+  ];
+
+  const stats = [
+    { value: 10000, label: 'Students', suffix: '+', icon: '👨‍🎓' },
+    { value: 500,   label: 'Colleges', suffix: '+', icon: '🏫' },
+    { value: 1000,  label: 'Projects', suffix: '+', icon: '💻' },
+    { value: 4.9,   label: 'Rating',   suffix: '★', icon: '⭐' },
+  ];
+
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ background: '#f8fafc', minHeight: '100vh', color: '#000', paddingBottom: '60px' }}>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ background: '#f8fafc', minHeight: '100vh', fontFamily: "'Inter', sans-serif" }}>
       <Navbar scrolled={scrolled} setPage={setPage} isDark={false} isLoggedIn={isLoggedIn} onAuth={onAuth} onLogout={onLogout} currentPage="student" />
-      <div className="container" style={{ paddingTop: '150px', textAlign: 'center' }}>
-        <h1 style={{ fontSize: '3rem', fontWeight: '900', letterSpacing: '-1px' }}>Student Section</h1>
-        <p style={{ marginTop: '1rem', color: '#666', fontSize: '1.2rem', fontWeight: '500' }}>Waiting for the design plan...</p>
+
+      {/* ═══ HERO — Centered ═══ */}
+      <section
+        onMouseMove={e => setMousePosition({ x: e.clientX, y: e.clientY })}
+        style={{
+          position: 'relative', overflow: 'hidden',
+          paddingTop: '120px', paddingBottom: '90px',
+          background: 'linear-gradient(160deg, #fff9f9 0%, #ffffff 45%, #fff5f5 100%)',
+        }}
+      >
+        {/* Dot grid */}
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle, rgba(220,38,38,0.06) 1px, transparent 1px)', backgroundSize: '30px 30px', pointerEvents: 'none' }} />
+        {/* Mouse-follow glow */}
+        <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(circle 500px at ${mousePosition.x}px ${mousePosition.y}px, rgba(220,38,38,0.07), transparent)`, pointerEvents: 'none', transition: 'background 0.1s ease' }} />
+        {/* Ambient orbs */}
+        <motion.div animate={{ scale: [1, 1.2, 1], opacity: [0.12, 0.28, 0.12] }} transition={{ duration: 8, repeat: Infinity }}
+          style={{ position: 'absolute', top: -120, right: -120, width: 550, height: 550, background: 'rgba(220,38,38,0.15)', borderRadius: '50%', filter: 'blur(130px)', pointerEvents: 'none' }} />
+        <motion.div animate={{ scale: [1, 1.15, 1], opacity: [0.08, 0.2, 0.08] }} transition={{ duration: 11, repeat: Infinity }}
+          style={{ position: 'absolute', bottom: -100, left: -100, width: 460, height: 460, background: 'rgba(220,38,38,0.1)', borderRadius: '50%', filter: 'blur(110px)', pointerEvents: 'none' }} />
+
+        <div className="container" style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+
+          {/* Floating illustration */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: [0, -18, 0] }}
+            transition={{ opacity: { duration: 0.8 }, y: { duration: 5, repeat: Infinity, ease: 'easeInOut' } }}
+            style={{ position: 'relative', marginBottom: '36px' }}
+          >
+            <div style={{ position: 'absolute', inset: 0, margin: 'auto', width: 280, height: 280, background: 'radial-gradient(circle, rgba(220,38,38,0.14) 0%, transparent 70%)', borderRadius: '50%', filter: 'blur(40px)' }} />
+            <img
+              src="/bartrstudent.png" alt="Student"
+              style={{ height: '280px', width: 'auto', objectFit: 'contain', filter: 'drop-shadow(0 24px 48px rgba(220,38,38,0.22))', position: 'relative', zIndex: 1 }}
+              onError={e => { e.target.style.display = 'none'; }}
+            />
+          </motion.div>
+
+          {/* Badge */}
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#dcfce7', color: '#15803d', padding: '7px 18px', borderRadius: '100px', fontWeight: 800, fontSize: '0.82rem', marginBottom: '22px', border: '1.5px solid #86efac', letterSpacing: '0.01em' }}>
+            🚀 India's #1 Student Ecosystem
+          </motion.div>
+
+          {/* Headline */}
+          <motion.h1 initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.65, delay: 0.15 }}
+            style={{ fontSize: 'clamp(2.8rem, 6vw, 5.2rem)', fontWeight: 900, lineHeight: 1.02, letterSpacing: '-4px', color: '#0f172a', maxWidth: '820px', marginBottom: '18px' }}>
+            Build Your{' '}
+            <span style={{ background: 'linear-gradient(135deg, #7f1d1d 0%, #dc2626 50%, #f87171 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+              <TypeAnimation
+                sequence={['Future 🚀', 2200, 'Career 💼', 2200, 'Projects 💻', 2200, 'Network 🌎', 2200]}
+                wrapper="span" speed={55} repeat={Infinity}
+              />
+            </span>
+          </motion.h1>
+
+          {/* Subtext */}
+          <motion.p initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
+            style={{ fontSize: '1.15rem', color: '#64748b', lineHeight: 1.75, maxWidth: '600px', marginBottom: '38px', fontWeight: 450 }}>
+            Find study notes · Earn through gigs · Meet project partners · Build your student network — everything in one place made for Indian students.
+          </motion.p>
+
+          {/* CTA Buttons */}
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
+            style={{ display: 'flex', gap: '14px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '56px' }}>
+            <motion.button onClick={() => setClickedCard({ title: 'Post Your Need', desc: 'Create a new request in the ecosystem.', image: '/study.gif' })} whileHover={{ scale: 1.04, y: -4 }} whileTap={{ scale: 0.96 }}
+              style={{ padding: '15px 32px', borderRadius: '14px', background: 'linear-gradient(135deg, #dc2626, #ef4444)', color: '#fff', fontWeight: 800, fontSize: '1rem', border: 'none', cursor: 'pointer', boxShadow: '0 10px 28px -6px rgba(220,38,38,0.45)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              🚀 Post Your Need
+            </motion.button>
+            <motion.button onClick={() => document.getElementById('services').scrollIntoView({ behavior: 'smooth' })} whileHover={{ scale: 1.04, y: -4 }} whileTap={{ scale: 0.96 }}
+              style={{ padding: '15px 32px', borderRadius: '14px', background: '#ffffff', color: '#dc2626', fontWeight: 800, fontSize: '1rem', border: '2px solid #fecaca', cursor: 'pointer', boxShadow: '0 4px 16px -4px rgba(0,0,0,0.08)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              ✨ Explore Services
+              <motion.span animate={{ x: [0, 6, 0] }} transition={{ duration: 1.2, repeat: Infinity }}>→</motion.span>
+            </motion.button>
+          </motion.div>
+
+          {/* Stats row */}
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
+            style={{ display: 'flex', gap: '0', justifyContent: 'center', flexWrap: 'wrap', background: '#fff', border: '1.5px solid #fef2f2', borderRadius: '20px', padding: '20px 8px', boxShadow: '0 4px 24px -6px rgba(0,0,0,0.07)', maxWidth: '600px', width: '100%' }}>
+            {[
+              { value: 10000, label: 'Students', icon: '👨‍🎓', suffix: '+' },
+              { value: 500,   label: 'Colleges', icon: '🏫',   suffix: '+' },
+              { value: 1000,  label: 'Projects',  icon: '💻',   suffix: '+' },
+              { value: null,  label: 'Rating',    icon: '⭐',   display: '4.9★' },
+            ].map((s, i, arr) => (
+              <div key={i} style={{ flex: '1', minWidth: '100px', textAlign: 'center', padding: '0 16px', borderRight: i < arr.length - 1 ? '1px solid #fef2f2' : 'none' }}>
+                <div style={{ fontSize: '1.65rem', fontWeight: 900, color: '#0f172a', lineHeight: 1, letterSpacing: '-1px' }}>
+                  {s.display ? s.display : <><CountUp target={s.value} duration={2.5} />{s.suffix}</>}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 600, marginTop: '5px' }}>{s.icon} {s.label}</div>
+              </div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+
+      {/* ── LIVE TICKER STRIP ── */}
+      <div style={{ position: 'relative', overflow: 'hidden', background: 'linear-gradient(90deg, #1e0a0a 0%, #3b0a0a 50%, #1e0a0a 100%)', padding: '18px 0', borderTop: '1px solid rgba(239,68,68,0.2)', borderBottom: '1px solid rgba(239,68,68,0.2)', marginBottom: '80px' }}>
+        <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', width: 400, height: 80, background: 'rgba(239,68,68,0.15)', filter: 'blur(60px)', borderRadius: '50%', pointerEvents: 'none' }} />
+        <motion.div animate={{ x: ['0%', '-50%'] }} transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
+          style={{ display: 'flex', gap: '20px', width: 'max-content' }}>
+          {[...tickerItems, ...tickerItems].map((item, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px 18px', background: 'rgba(255,255,255,0.06)', borderRadius: '50px', border: '1px solid rgba(255,255,255,0.08)', whiteSpace: 'nowrap', minWidth: '260px' }}>
+              <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, #ef4444, #b91c1c)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', flexShrink: 0 }}>{item.icon}</div>
+              <div>
+                <div style={{ color: '#fff', fontWeight: 700, fontSize: '0.875rem' }}>{item.text}</div>
+                <div style={{ color: '#f87171', fontSize: '0.75rem', fontWeight: 600 }}>● {item.status}</div>
+              </div>
+            </div>
+          ))}
+        </motion.div>
       </div>
+
+      {/* ── UNIQUE SERVICES BENTO GRID ── */}
+      <section id="services" style={{ paddingBottom: '120px', position: 'relative', background: '#fff' }}>
+        {/* Ambient glows */}
+        <div style={{ position: 'absolute', top: -100, left: -100, width: 400, height: 400, background: 'radial-gradient(circle, rgba(239,68,68,0.06) 0%, transparent 70%)', borderRadius: '50%', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', bottom: 100, right: -100, width: 500, height: 500, background: 'radial-gradient(circle, rgba(239,68,68,0.04) 0%, transparent 70%)', borderRadius: '50%', pointerEvents: 'none' }} />
+
+        <div className="container" style={{ position: 'relative', zIndex: 10, maxWidth: '1200px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '64px' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#fef2f2', color: '#dc2626', padding: '8px 18px', borderRadius: '100px', fontWeight: 800, fontSize: '0.85rem', marginBottom: '16px', border: '1.5px solid #fecaca' }}>
+              ✨ Student Ecosystem
+            </div>
+            <h2 style={{ fontSize: 'clamp(2.4rem, 5vw, 3.8rem)', fontWeight: 900, letterSpacing: '-2px', color: '#0f172a', marginBottom: '16px' }}>
+              Explore Student Services
+            </h2>
+            <p style={{ color: '#64748b', fontSize: '1.15rem', maxWidth: '600px', margin: '0 auto', lineHeight: 1.7, fontWeight: 500 }}>
+              Everything you need to thrive — notes, gigs, rentals, and collaborations mapped to your campus.
+            </p>
+          </div>
+
+          {/* Bento Grid */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+            gridAutoRows: 'auto',
+            gap: '30px'
+          }}>
+            {studentCards.map((card, i) => {
+              // Create an asymmetric feel by making the 1st and 6th cards span wider on large screens (if grid allows, though auto-fit might wrap them. We'll use a dynamic style for larger screens if possible, or just uniquely style them).
+              // Since inline media queries are hard, we'll give them a consistently premium layout with the image on the right/top depending on the card.
+              const isLarge = i === 0 || i === 3; 
+
+              return (
+                <motion.div
+                  key={i}
+                  onClick={() => setClickedCard(card)}
+                  initial={{ opacity: 0, y: 40 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.1, duration: 0.6, ease: "easeOut" }}
+                  viewport={{ once: true, margin: "-50px" }}
+                  whileHover={{ y: -10 }}
+                  style={{
+                    position: 'relative',
+                    background: '#ffffff',
+                    borderRadius: '32px',
+                    padding: '36px',
+                    border: '1px solid rgba(220,38,38,0.1)',
+                    boxShadow: '0 20px 40px -12px rgba(0,0,0,0.06)',
+                    cursor: 'pointer',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    minHeight: '340px'
+                  }}
+                >
+                  {/* Subtle top gradient accent */}
+                  <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '6px', background: `linear-gradient(90deg, ${card.border}, #dc2626)` }} />
+                  
+                  {/* Glowing background blob behind image */}
+                  <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '200px', height: '200px', background: card.color, borderRadius: '50%', filter: 'blur(40px)', zIndex: 0 }} />
+
+                  <div style={{ position: 'relative', zIndex: 1 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#f8fafc', color: '#475569', padding: '6px 14px', borderRadius: '100px', fontSize: '0.75rem', fontWeight: 800, border: '1px solid #e2e8f0' }}>
+                        <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981' }} />
+                        LIVE NOW
+                      </div>
+                      <div style={{ width: 80, height: 80, background: '#fff', borderRadius: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 12px 24px -8px rgba(0,0,0,0.12)', border: '1px solid #f1f5f9' }}>
+                        <img src={card.image} alt={card.title} style={{ width: '56px', height: '56px', objectFit: 'contain' }} onError={(e) => { e.target.style.display='none'; e.target.parentNode.innerHTML=`<span style="font-size:2rem">${card.tag}</span>` }} />
+                      </div>
+                    </div>
+
+                    <h3 style={{ fontSize: '1.6rem', fontWeight: 900, color: '#0f172a', marginBottom: '12px', lineHeight: 1.2, letterSpacing: '-0.5px' }}>
+                      {card.title}
+                    </h3>
+                    <p style={{ color: '#64748b', lineHeight: 1.6, fontSize: '1.05rem', fontWeight: 500, marginBottom: '32px' }}>
+                      {card.desc}
+                    </p>
+                  </div>
+
+                  <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', paddingTop: '24px', borderTop: '1px solid #f1f5f9' }}>
+                    <span style={{ fontSize: '0.9rem', color: '#dc2626', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                      Trending
+                    </span>
+                    <motion.div whileHover={{ x: 5 }} style={{ width: 44, height: 44, borderRadius: '50%', background: 'linear-gradient(135deg, #dc2626, #ef4444)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', boxShadow: '0 8px 16px -4px rgba(220,38,38,0.4)' }}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    </motion.div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ── CTA SECTION ── */}
+      <section className="relative py-24 overflow-hidden bg-gradient-to-b from-[#fff8f8] via-[#fff3f3] to-[#fffafa]">
+        <div className="absolute top-[0] right-[-150px] w-[400px] h-[400px] bg-red-100/30 rounded-full blur-[140px]" />
+        <div className="absolute bottom-[-100px] left-[-150px] w-[350px] h-[350px] bg-red-50/40 rounded-full blur-[120px]" />
+
+        <motion.img src="/laptop-work.gif" alt="student"
+          initial={{ opacity:0, x:100 }} whileInView={{ opacity:.65, x:0 }}
+          animate={{ y:[0,-15,0] }}
+          transition={{ opacity:{duration:1}, x:{duration:1}, y:{duration:5,repeat:Infinity,ease:'easeInOut'} }}
+          className="hidden lg:block absolute right-[-60px] bottom-[0] w-[420px] pointer-events-none mix-blend-multiply brightness-110 saturate-110 opacity-75 blur-[0.2px] drop-shadow-[0_25px_50px_rgba(239,68,68,.06)]" />
+
+        <div className="container relative z-10 text-center">
+          <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-red-100/70 backdrop-blur-md text-red-600 font-bold mb-6">✨ Join Bartr Community</div>
+
+          <motion.h2 initial={{ opacity:0, y:30 }} whileInView={{ opacity:1, y:0 }} transition={{ duration:.8 }}
+            className="text-5xl md:text-6xl font-black tracking-[-3px] text-gray-900">
+            Ready To Build Your<br />
+            <span className="bg-gradient-to-r from-red-700 via-red-500 to-red-400 bg-clip-text text-transparent">Student Journey?</span>
+          </motion.h2>
+
+          <p className="mt-6 text-slate-500 max-w-[700px] mx-auto leading-8 text-lg">
+            Join students sharing 📚 notes, completing 💻 projects, finding 🏠 rentals and building 🚀 opportunities together.
+          </p>
+
+          <div className="flex justify-center gap-4 flex-wrap mt-10">
+            {['👨‍🎓 2K+ Students','💼 500+ Gigs','📚 1K+ Notes','⭐ 4.9 Rating'].map((item,index) => (
+              <div key={index} className="px-4 py-2 rounded-full bg-white border border-red-100 text-gray-700 font-medium shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-500">{item}</div>
+            ))}
+          </div>
+
+          <div className="mt-12">
+            <motion.button 
+              onClick={() => setClickedCard({ title: 'Join the Ecosystem', desc: 'Bartr student community is launching soon. Get ready to connect, earn and build!', image: '/study.gif', tag: '🚀' })}
+              whileHover={{ scale:1.05, y:-4 }} whileTap={{ scale:.95 }}
+              className="group px-10 py-4 rounded-[20px] bg-gradient-to-r from-red-600 to-red-500 font-bold text-white shadow-[0_15px_35px_rgba(239,68,68,.12)]">
+              <div className="flex items-center gap-3">
+                🚀 Join Ecosystem (Coming Soon)
+                <motion.span animate={{ x:[0,8,0] }} transition={{ duration:1, repeat:Infinity }}>→</motion.span>
+              </div>
+            </motion.button>
+          </div>
+        </div>
+      </section>
+      {/* MODAL / POPUP OVERLAY */}
+      {clickedCard && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)' }}>
+          <motion.div initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+            style={{ position: 'relative', width: '100%', maxWidth: '440px', background: '#fff', borderRadius: '32px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', border: '1px solid #f1f5f9', overflow: 'hidden' }}>
+            
+            <button onClick={() => setClickedCard(null)} style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 10, width: '36px', height: '36px', borderRadius: '50%', background: '#fff', border: '1px solid #e2e8f0', color: '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', fontSize: '1.2rem' }}>
+              ✕
+            </button>
+
+            <div style={{ padding: '40px 32px', textAlign: 'center', background: 'linear-gradient(135deg, #fff 0%, #fef2f2 100%)' }}>
+              <div style={{ width: '90px', height: '90px', margin: '0 auto 24px', background: '#fff', borderRadius: '24px', boxShadow: '0 12px 24px -8px rgba(0,0,0,0.1)', border: '1px solid #fecaca', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <img src={clickedCard.image} alt={clickedCard.title} style={{ width: '56px', height: '56px', objectFit: 'contain' }} onError={(e) => { e.target.style.display='none'; e.target.parentNode.innerHTML=`<span style="font-size:3rem">${clickedCard.tag || '🚀'}</span>` }} />
+              </div>
+              
+              <h3 style={{ fontSize: '1.8rem', fontWeight: 900, color: '#0f172a', marginBottom: '12px', lineHeight: 1.2, letterSpacing: '-0.5px' }}>{clickedCard.title}</h3>
+              <p style={{ color: '#64748b', fontSize: '1.05rem', lineHeight: 1.6, marginBottom: '28px' }}>{clickedCard.desc}</p>
+              
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 20px', background: '#fef2f2', borderRadius: '100px', marginBottom: '32px', border: '1.5px solid #fecaca' }}>
+                <span style={{ position: 'relative', display: 'flex', width: '8px', height: '8px' }}>
+                  <span style={{ position: 'absolute', width: '100%', height: '100%', background: '#f87171', borderRadius: '50%', opacity: 0.7 }} className="animate-ping" />
+                  <span style={{ position: 'relative', width: '8px', height: '8px', background: '#ef4444', borderRadius: '50%' }} />
+                </span>
+                <span style={{ color: '#dc2626', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Coming Soon</span>
+              </div>
+              
+              <motion.button onClick={() => setClickedCard(null)} whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.97 }}
+                style={{ width: '100%', padding: '16px', borderRadius: '16px', background: '#0f172a', color: '#fff', fontWeight: 800, fontSize: '1rem', border: 'none', cursor: 'pointer', boxShadow: '0 10px 25px -5px rgba(15,23,42,0.3)' }}>
+                Got it!
+              </motion.button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
     </motion.div>
   );
 };
@@ -1460,7 +1757,7 @@ const TRIScorePage = ({ setPage, isLoggedIn, onAuth, onLogout }) => {
               transition={{ repeat: Infinity, duration: 50, ease: 'linear' }}
               className="whitespace-nowrap font-black text-[10rem] tracking-tighter"
             >
-              VERIFIED • NAGPUR • BARTR • PERFORMANCE • ELITE • VERIFIED • NAGPUR • BARTR • PERFORMANCE
+              VERIFIED • INDIA • BARTR • PERFORMANCE • ELITE • VERIFIED • INDIA • BARTR • PERFORMANCE
             </motion.div>
           </div>
         </div>
@@ -1813,7 +2110,7 @@ const CareersPage = ({ setPage, isLoggedIn, onAuth, onLogout }) => {
               style={{ background: '#ddd6fe', border: '4px solid black', padding: 'clamp(1.25rem, 5vw, 2.5rem)', borderRadius: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap', cursor: 'pointer', boxShadow: '-8px 8px 0px black', position: 'relative', overflow: 'hidden' }}>
               <div>
                 <h3 style={{ fontSize: 'clamp(1.5rem, 7vw, 2.25rem)', marginBottom: '0.75rem', color: 'black', fontWeight: '900' }}>Professional Scope Creeper <br /><span style={{ fontSize: '1.125rem', color: '#1e293b', fontWeight: 'bold' }}>aka Product Manager</span></h3>
-                <p style={{ color: 'black', margin: 0, fontSize: 'clamp(1rem, 4vw, 1.25rem)', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', fontWeight: '600' }}><MapPin size={24} color="black" /> Nagpur HQ • Expertise in scheduling meetings that could've been emails.</p>
+                <p style={{ color: 'black', margin: 0, fontSize: 'clamp(1rem, 4vw, 1.25rem)', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', fontWeight: '600' }}><MapPin size={24} color="black" /> India HQ • Expertise in scheduling meetings that could've been emails.</p>
               </div>
               <motion.div whileHover={{ rotate: -45, scale: 1.2 }} transition={{ type: 'spring' }} style={{ background: 'white', padding: '1.25rem', border: '3px solid black', borderRadius: '50%', color: 'black', boxShadow: '-4px 4px 0px black' }}>
                 <ArrowRight size={36} strokeWidth={3} />
@@ -2188,7 +2485,7 @@ const PitchFireRegistration = ({ setPage, user }) => {
           transition={{ repeat: Infinity, duration: 25, ease: 'linear' }}
           style={{ fontSize: '20rem', fontWeight: 900, color: '#ef4444', whiteSpace: 'nowrap', lineHeight: 1 }}
         >
-          NAGPUR STARTUPS • NAGPUR STARTUPS • NAGPUR STARTUPS
+          INDIA STARTUPS • INDIA STARTUPS • INDIA STARTUPS
         </motion.div>
       </div>
 
@@ -2686,7 +2983,7 @@ const WelcomePage = ({ setPage, user }) => {
         </h1>
 
         <p className="text-xl md:text-2xl text-slate-300 font-bold mb-10 leading-tight">
-          You are officially <span className="text-white">verified.</span> <br /> Nagpur's biggest opportunity hub is waiting.
+          You are officially <span className="text-white">verified.</span> <br /> India's biggest opportunity hub is waiting.
         </p>
 
         {/* Countdown Progress */}
@@ -2793,7 +3090,7 @@ const UserProfile = ({ setPage, user }) => {
           transition={{ repeat: Infinity, duration: 35, ease: 'linear' }}
           style={{ fontSize: '20rem', fontWeight: 900, color: '#10b981', whiteSpace: 'nowrap', lineHeight: 1 }}
         >
-          NAGPUR STARTUPS • NAGPUR STARTUPS • NAGPUR STARTUPS
+          INDIA STARTUPS • INDIA STARTUPS • INDIA STARTUPS
         </motion.div>
       </div>
 
@@ -2833,7 +3130,7 @@ const UserProfile = ({ setPage, user }) => {
                   <input value={profile.phone} onChange={e => setProfile({ ...profile, phone: e.target.value })} style={{ width: '100%', padding: '1rem', border: '3px solid black', borderRadius: '12px', fontWeight: 'bold', fontSize: '1.1rem' }} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontWeight: '900', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Location (e.g., Wardha Road, Nagpur)</label>
+                  <label style={{ display: 'block', fontWeight: '900', marginBottom: '0.5rem', textTransform: 'uppercase' }}>Location (e.g., Wardha Road, India)</label>
                   <input value={profile.location} onChange={e => setProfile({ ...profile, location: e.target.value })} style={{ width: '100%', padding: '1rem', border: '3px solid black', borderRadius: '12px', fontWeight: 'bold', fontSize: '1.1rem' }} />
                 </div>
                 <div>
@@ -3019,7 +3316,7 @@ const AuthModal = ({ isOpen, initialMode, onClose }) => {
                   {isLogin ? 'Welcome Back, Legend' : 'Join the Hustle'}
                 </h2>
                 <p className="text-white font-black opacity-90 uppercase tracking-widest text-xs">
-                  {isLogin ? 'Nagpur is waiting for you' : 'Start building your future today'}
+                  {isLogin ? 'India is waiting for you' : 'Start building your future today'}
                 </p>
 
                 <motion.button
@@ -3626,11 +3923,11 @@ const Footer = ({ setPage }) => {
               <span className="text-white text-2xl font-black tracking-tight font-['Space_Grotesk']">Bartr.in</span>
             </motion.div>
             <p className="text-slate-400 font-bold leading-relaxed text-lg">
-              Nagpur's premiere hyperlocal platform. Connecting the city's talent with immediate local needs through transparency and technology.
+              India's premiere hyperlocal platform. Connecting the city's talent with immediate local needs through transparency and technology.
             </p>
             <div className="flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-2 rounded-full w-fit">
               <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_10px_#10b981]" />
-              <span className="text-xs font-black uppercase tracking-widest text-slate-300">Live in Nagpur</span>
+              <span className="text-xs font-black uppercase tracking-widest text-slate-300">Live in India</span>
             </div>
           </div>
 
@@ -3640,7 +3937,7 @@ const Footer = ({ setPage }) => {
             <ul className="space-y-5">
               {[
                 { name: 'Browse Gigs', page: 'gigs' },
-                { name: 'Nagpur Events', page: 'events' },
+                { name: 'India Events', page: 'events' },
                 { name: 'Careers', page: 'careers' },
                 { name: 'TRI Score', page: 'tri-score' }
               ].map((link) => (
@@ -3687,7 +3984,7 @@ const Footer = ({ setPage }) => {
               </a>
               <div className="flex items-center gap-3 text-slate-400">
                 <div className="bg-white/5 p-2 rounded-lg"><MapPin size={18} /></div>
-                <span className="font-bold">Nagpur, Maharashtra</span>
+                <span className="font-bold">India, Maharashtra</span>
               </div>
             </div>
 
@@ -3708,7 +4005,7 @@ const Footer = ({ setPage }) => {
         {/* Bottom Bar */}
         <div className="pt-12 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-8">
           <p className="text-slate-500 font-bold text-sm">
-            © 2026 Bartr Platform. All rights reserved. Built for <span className="text-white">Nagpur.</span>
+            © 2026 Bartr Platform. All rights reserved. Built for <span className="text-white">India.</span>
           </p>
           <div className="flex items-center gap-8">
             <motion.a whileHover={{ color: 'white' }} href="#" className="text-slate-500 font-black text-xs uppercase tracking-widest transition-colors">Instagram</motion.a>
@@ -3775,7 +4072,7 @@ function LandingPage({ setPage, isLoggedIn, onAuth, onLogout }) {
           >
             <motion.div variants={fadeInUp} className="inline-flex items-center gap-2 bg-brand-red/10 text-brand-red border border-brand-red/20 px-5 py-2.5 rounded-full font-black text-sm mb-8 shadow-crystal animate-pulse-slow">
               <MapPin size={18} className="animate-bounce" />
-              Showing opportunities from Nagpur
+              Showing opportunities from India
             </motion.div>
 
             <motion.h1 variants={fadeInUp} className="text-[clamp(3rem,12vw,9rem)] font-black leading-[0.8] tracking-tighter mb-2 text-slate-900 filter drop-shadow-sm">
@@ -3787,7 +4084,7 @@ function LandingPage({ setPage, isLoggedIn, onAuth, onLogout }) {
             </motion.h1>
 
             <motion.p variants={fadeInUp} className="text-lg md:text-3xl text-slate-600 font-medium leading-relaxed max-w-[750px] mb-10 opacity-80 px-1 md:px-0">
-              Bartr is Nagpur's hyperlocal platform for workers, businesses, and individuals to exchange services, gigs, and opportunities — instantly and transparently.
+              Bartr is India's hyperlocal platform for workers, businesses, and individuals to exchange services, gigs, and opportunities — instantly and transparently.
             </motion.p>
 
           </motion.div>
@@ -3802,7 +4099,7 @@ function LandingPage({ setPage, isLoggedIn, onAuth, onLogout }) {
           <span>• VERIFIED PROFILES</span>
           <span>• INSTANT CONNECTIONS</span>
           <span>• AI MODERATION</span>
-          <span>• NAGPUR FIRST</span>
+          <span>• INDIA FIRST</span>
           <span>• CITY WIDE EXPOSURE</span>
           <span>• SECURE PLATFORM</span>
           <span>• NO SPAM</span>
@@ -3811,7 +4108,7 @@ function LandingPage({ setPage, isLoggedIn, onAuth, onLogout }) {
           <span>• VERIFIED PROFILES</span>
           <span>• INSTANT CONNECTIONS</span>
           <span>• AI MODERATION</span>
-          <span>• NAGPUR FIRST</span>
+          <span>• INDIA FIRST</span>
           <span>• CITY WIDE EXPOSURE</span>
           <span>• SECURE PLATFORM</span>
           <span>• NO SPAM</span>
@@ -3929,7 +4226,7 @@ function LandingPage({ setPage, isLoggedIn, onAuth, onLogout }) {
                 <div className="check-icon"><MapPin size={24} /></div>
                 <div>
                   <h4 style={{ color: 'var(--text-primary)' }}>City-first approach</h4>
-                  <span style={{ fontSize: '1.125rem' }}>Starting with Nagpur, focusing on local demand.</span>
+                  <span style={{ fontSize: '1.125rem' }}>Starting with India, focusing on local demand.</span>
                 </div>
               </motion.li>
               <motion.li variants={fadeInUp} whileHover={{ x: 15, color: 'var(--brand-red)' }} style={{ margin: '2rem 0' }}>
@@ -3996,7 +4293,7 @@ function LandingPage({ setPage, isLoggedIn, onAuth, onLogout }) {
             <span className="inline-flex items-center gap-2 bg-rose-50 text-rose-600 px-5 py-2 rounded-full font-black text-xs uppercase tracking-widest mb-6 border border-rose-100 shadow-sm">
               Real Stories
             </span>
-            <h2 className="text-4xl md:text-6xl font-black tracking-tighter text-slate-900 mb-6">What Nagpur is <span className="text-brand-red">Saying.</span></h2>
+            <h2 className="text-4xl md:text-6xl font-black tracking-tighter text-slate-900 mb-6">What India is <span className="text-brand-red">Saying.</span></h2>
             <p className="text-lg md:text-xl text-slate-500 font-bold max-w-2xl mx-auto">Join thousands of local professionals who have transformed their work-life balance on Bartr.</p>
           </motion.div>
 
@@ -4026,7 +4323,7 @@ function LandingPage({ setPage, isLoggedIn, onAuth, onLogout }) {
                   </div>
                   <div>
                     <h4 className="font-black text-slate-900 leading-none mb-1">{t.author}</h4>
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Nagpur, India</span>
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">India, India</span>
                   </div>
                 </div>
               </motion.div>
