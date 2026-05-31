@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion';
+import { TypeAnimation } from 'react-type-animation';
 import { supabase, isSupabaseConfigured } from './supabase';
 import { LocationPickerMap, GigLocationMap } from './OSMComponents';
 import { FileUploadButton, FilePreview, MessageAttachment, uploadFile } from './FileUpload';
