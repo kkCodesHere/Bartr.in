@@ -2782,6 +2782,21 @@ export default function App() {
 
       if (session && event === 'SIGNED_IN') {
         setShowAuthModal(false);
+        
+        // If the user was created less than 15 seconds ago, they just signed up (e.g. via Google OAuth)
+        const isNewUser = (Date.now() - new Date(session.user.created_at).getTime()) < 15000;
+        
+        if (isNewUser) {
+          // Send custom welcome email via backend
+          const email = session.user.email;
+          const fullName = session.user.user_metadata?.full_name || session.user.user_metadata?.name || 'User';
+          
+          fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/welcome-email`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, fullName })
+          }).catch(err => console.error("Welcome email failed for OAuth:", err));
+        }
       }
     });
 
