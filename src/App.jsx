@@ -3434,7 +3434,7 @@ const AuthModal = ({ isOpen, initialMode, onClose }) => {
                   whileTap={{ scale: 0.98, y: 0 }}
                   className="w-full bg-white border-4 border-black py-4 rounded-2xl flex items-center justify-center gap-4 shadow-[8px_8px_0px_rgba(0,0,0,0.1)] hover:shadow-[8px_8px_0px_black] transition-all"
                 >
-                  <img src="https://www.gstatic.com/lamda/images/google_favicon_v2.svg" className="w-6 h-6" alt="G" />
+                  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/google/google-original.svg" className="w-6 h-6" alt="G" />
                   <span className="font-black text-base sm:text-xl uppercase italic">Continue with Google</span>
                 </motion.button>
 
