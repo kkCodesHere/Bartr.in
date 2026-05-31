@@ -9,13 +9,13 @@ const config = {
   user: process.env.FTP_USER,
   password: process.env.FTP_PASS,
   host: process.env.FTP_HOST,
-  port: 21,
+  port: process.env.FTP_PORT || 22,
   localRoot: "./dist",
   remoteRoot: "/public_html/",
   include: ["*", "**/*"],
   deleteRemote: false,
   forcePasv: true,
-  sftp: false
+  sftp: true
 };
 
 console.log("🚀 Starting automatic deployment to cPanel...");
